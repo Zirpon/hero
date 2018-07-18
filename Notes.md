@@ -54,7 +54,7 @@ sh ./contrib/download_prerequisites
 mkdir objdir
 cd objdir
 ../configure --disable-multilib --enable-languages=c,c++
-make & make install
+make && make install
 ```
 
 ## Internet ip 
