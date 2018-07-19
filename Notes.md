@@ -11,13 +11,12 @@ mongod --shutdown  --dbpath=/data/mongodb/
 
 ## 启动/关闭rocket
 
-### logPath:
+### logPath
 
 >* ~/logs/rocketmqlogs/namesrv.log
->* ~/logs/rocketmqlogs/broker.log 
+>* ~/logs/rocketmqlogs/broker.log
 
-
-### example:
+### example
 
 ```shell
 nohup sh bin/mqnamesrv &
@@ -35,7 +34,7 @@ service firewalld stop
 
 ## vm mac address
 
-```
+```shell
 centos-1 00:0c:29:db:31:34
 centos-2 00:0c:29:b7:99:3d
 mac-centos-1 00:0c:29:ba:4e:b8
@@ -57,10 +56,10 @@ cd objdir
 make && make install
 ```
 
-## Internet ip 
+## Internet ip
 
 >* 192.168.3.18
->* 192.168.2.156 
+>* 192.168.2.156
 >* root 123456
 
 ## 更新内网
