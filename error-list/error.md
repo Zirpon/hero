@@ -37,6 +37,7 @@
 ### 4. 导表生成的目录
 
 > http://192.168.0.151:18082/svn/svn_CJ/program/client/config/trunk
+
 ---
 
 ## PC 打包流程
@@ -63,15 +64,15 @@
 
 > http://192.168.0.151:18082/svn/svn_CJ/program/client/resbin/trunk 路径下的 windows文件夹 拷贝到
 
-> http://192.168.0.151:18082/svn/svn_CJ/program/client/trunk/cj/Assets/StreamingAssets 这个目录，
-
-并在编辑器下点击
+> http://192.168.0.151:18082/svn/svn_CJ/program/client/trunk/cj/Assets/StreamingAssets 这个目录，并在编辑器下点击
 
 ![buildguid](../resource/buildguid.png)
 
 弹出界面点击Build按钮即可生成可执行文件。
 
 ![buildbutton](../resource/buildbutton.png)
+
+---
 
 ## skynet rwlock
 
