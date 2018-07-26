@@ -77,3 +77,7 @@
 ## skynet rwlock
 
 ![analyse](../resource/skynet_rwlock.png)
+
+## Get Progress Env
+
+> cat /proc/63732/environ | tr '0' '\n'
