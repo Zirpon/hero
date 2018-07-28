@@ -18,7 +18,7 @@ Maged Michael是IBM的Thomas J.Watson研究中心的研究员。
 
 上期的文章中，在引入了锁无关编程的概念之后我们曾实现了一个锁无关的WRRM（***Write-Rarely-Read-Many***）Map。我们经常看到这类数据结构以全局表、工厂对象、高速缓存(cache)等形式出现。我们遇到的问题在于内存的回收：既然我们的数据结构得是锁无关的，那么我们该如何来回收内存呢？正如前面讨论过的，这是个棘手的问题，因为锁无关意味着任何线程在任何时候都有不受限的机会去操作任何对象。为了解决这一问题，上篇文章中曾作了以下几点尝试：
 
-对map使用引用计数。该策略是注定要失败的，因为它要求对指针和引用计数变量（它们在内存中处于不同的地方）同时进行（原子地）更新。尽管有少数论文使用了DCAS(Double Compare-And-Swap，该指令的行为正是这里所需要的)，然而这个东西从来也没能流行起来，因为没有它我们照样能够做许多事情，而且它也没有强大到能够高效地实现出任意事务的程度。参考[2]关于DCAS的用途的讨论。
+对map使用引用计数。该策略是注定要失败的，因为它要求对指针和引用计数变量（它们在内存中处于不同的地方）同时进行（原子地）更新。尽管有少数论文使用了DCAS(Double Compare-And-Swap，该指令的行为正是这里所需要的)，然而这个东西从来也没能流行起来，因为没有它我们照样能够做许多事情，而且它也没有强大到能够高效地实现出任意事务的程度。参考[关于DCAS的用途的讨论][2]。
 等待并delete。一旦“清理”线程知道某个指针要被delete掉了，它就可以等待一段“足够长的时间”然后delete它。然而问题是这段“足够长的时间”到底应该有多长呢？所以说这个方案听上去跟“分配一块足够大的缓冲区”一样蹩脚，后者怎么样大家是知道的。
 将引用计数跟指针紧挨着存放在一起。这个方案使用了要求较少，可以合理实现的CAS2原语，CAS2能够原子地Compare-and-Swap内存中的两个紧邻的字。大多数32位机器都支持这一原语，只不过支持它的64位机器倒没那么多了，不过对于后一种情况我们可以在指针内的位上面做点文章来解决这个问题）。
 上面提到的最后一个方案被证明是可行的，只不过它却将我们的漂亮的WRRM Map变成了一个粗陋的WRRMBNTM(Write-Rarely-Read-Many-But-Not-Too-Many) Map，因为其写操作需要等到绝对没有任何读操作正在进行的时候才会去写。这就意味着，只要有一个读操作在所有其它读操作结束之前开始了，写操作就只能干等。而这就不能算是锁无关了。
@@ -67,97 +67,57 @@ HPRecType类提供了两个原语：Acquire和Release。HPRecType::Acquire返回
 class HPRecType {
 
    HPRecType * pNext_;
-
    int active_;
-
    // Global header of the HP list
-
    static HPRecType * pHead_;
-
    // The length of the list
-
    static int listLen_;
 
 public:
-
-   // Can be used by the thread
-
-   // that acquired it
-
-   void * pHazard_;
-
-   static HPRecType * Head() {
-
-      return pHead_;
-
-   }
+    // Can be used by the thread
+    // that acquired it
+    void * pHazard_;
+    static HPRecType * Head() {
+        return pHead_;
+    }
 
    // Acquires one hazard pointer
+    static HPRecType * Acquire() {
+        // Try to reuse a retired HP record
+        HPRecType * p = pHead_;
+        for (; p; p = p->pNext_) {
+            if (p->active_ || !CAS(&p->active_, 0, 1))
+                continue;
 
-   static HPRecType * Acquire() {
+            // Got one!
+            return p;
+        }
 
-      // Try to reuse a retired HP record
+        // Increment the list length
+        int oldLen;
+        do {
+            oldLen = listLen_;
+        } while (!CAS(&listLen_, oldLen,oldLen + 1));
 
-      HPRecType * p = pHead_;
+        // Allocate a new one
+        HPRecType * p = new HPRecType;
+        p->active_ = 1;
+        p->pHazard_ = 0;
 
-      for (; p; p = p->pNext_) {
+        // Push it to the front
+        do {
+            old = pHead_;
+            p->pNext_ = old;
+        } while (!CAS(&pHead_, old, p));
 
-         if (p->active_ ||
-
-            !CAS(&p->active_, 0, 1))
-
-           continue;
-
-         // Got one!
-
-         return p;
-
-      }
-
-      // Increment the list length
-
-      int oldLen;
-
-      do {
-
-         oldLen = listLen_;
-
-      } while (!CAS(&listLen_, oldLen,
-
-          oldLen + 1));
-
-      // Allocate a new one
-
-      HPRecType * p = new HPRecType;
-
-      p->active_ = 1;
-
-      p->pHazard_ = 0;
-
-      // Push it to the front
-
-      do {
-
-         old = pHead_;
-
-         p->pNext_ = old;
-
-      } while (!CAS(&pHead_, old, p));
-
-      return p;
-
-   }
+        return p;
+    }
 
    // Releases a hazard pointer
-
-   static void Release(HPRecType* p) {
-
-      p->pHazard_ = 0;
-
-      p->active_ = 0;
-
-   }
-
+    static void Release(HPRecType* p) {
+        p->pHazard_ = 0;
+        p->active_ = 0;
+    }
 };
 
 // Per-thread private variable
@@ -355,12 +315,12 @@ Bullet探长冲进了他的债务人的办公室，并立即认识到他今天�
 
 References
 
-[1] Alexandrescu, Andrei. "Generic<Programming>: Lock-Free Data Structures," C++ Users Journal, October 2004.
+[1]: Alexandrescu, Andrei. "Generic<Programming>: Lock-Free Data Structures," C++ Users Journal, October 2004.
 
-[2] Doherty, Simon, David L. Detlefs, Lindsay Grove, Christine H. Flood, Victor Luchangco, Paul A. Martin, Mark Moir, Nir Shavit, and Jr. Guy L. Steele. "DCAS is not a silver bullet for nonblocking algorithm design." Proceedings of the Sixteenth Annual ACM Symposium on Parallelism in Algorithms and Architectures, pages 216-224. ACM Press, 2004. ISBN 1-58113-840-7.
+[2]: Doherty, Simon, David L. Detlefs, Lindsay Grove, Christine H. Flood, Victor Luchangco, Paul A. Martin, Mark Moir, Nir Shavit, and Jr. Guy L. Steele. "DCAS is not a silver bullet for nonblocking algorithm design." Proceedings of the Sixteenth Annual ACM Symposium on Parallelism in Algorithms and Architectures, pages 216-224. ACM Press, 2004. ISBN 1-58113-840-7.
 
-[3] Michael, Maged M. "Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects," IEEE Transactions on Parallel and Distributed Systems, pages 491-504. IEEE, 2004.
+[3]: Michael, Maged M. "Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects," IEEE Transactions on Parallel and Distributed Systems, pages 491-504. IEEE, 2004.
 
-[4] Michael, Maged M. "Practical Lock-Free and Wait-Free LL/SC/VL Implementations Using 64-Bit CAS," Proceedings of the 18th International Conference on Distributed Computing, LNCS volume 3274, pages 144-158, October 2004.
+[4]: Michael, Maged M. "Practical Lock-Free and Wait-Free LL/SC/VL Implementations Using 64-Bit CAS," Proceedings of the 18th International Conference on Distributed Computing, LNCS volume 3274, pages 144-158, October 2004.
 
-[5] Tang, Hong, Kai Shen, and Tao Yang. "Program Transformation and Runtime Support for Threaded MPI Execution on Shared-memory Machines," ACM Transactions on Programming Languages and Systems, 22(4):673-700, 2000 (citeseer.ist.psu.edu/tang99program.html).
+[5]: Tang, Hong, Kai Shen, and Tao Yang. "Program Transformation and Runtime Support for Threaded MPI Execution on Shared-memory Machines," ACM Transactions on Programming Languages and Systems, 22(4):673-700, 2000 (citeseer.ist.psu.edu/tang99program.html).
