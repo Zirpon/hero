@@ -70,6 +70,11 @@ make && make install
 
 ---
 
+## app store 美国区
+
+> 账号：bevbk8e@icloud.com
+> 密码：Ss112211
+
 ## 流程图
 
 ```flow
