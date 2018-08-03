@@ -56,6 +56,11 @@ cd objdir
 make && make install
 ```
 
+## svn account password
+
+> zhangzhipeng  
+> Zhipeng123123
+
 ## Internet ip
 
 >* 192.168.3.18
