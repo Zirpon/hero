@@ -41,3 +41,312 @@ Traceback (most recent call last):
   File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 507, in send
     raise ProxyError(e, request=request)
 requests.exceptions.ProxyError: HTTPSConnectionPool(host='wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/webwxsync?sid=wUdV3udVlg8A6Kqr&skey=@crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&pass_ticket=jo%2F7zpdYh5TpBqqpIwI9amTxlgjMCKe6xQE%2BXSaO4eY%3D (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 600, in urlopen
+    chunked=chunked)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 384, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 2, in raise_from
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 380, in _make_request
+    httplib_response = conn.getresponse()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 1321, in getresponse
+    response.begin()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 296, in begin
+    version, status, reason = self._read_status()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 265, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 445, in send
+    timeout=timeout
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 638, in urlopen
+    _stacktrace=sys.exc_info()[2])
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\util\retry.py", line 398, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261533471&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261533471 (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 303, in sync_check
+    r = self.s.get(url, params=params, headers=headers, timeout=config.TIMEOUT)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 525, in get
+    return self.request('GET', url, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 512, in request
+    resp = self.send(prep, **send_kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 622, in send
+    r = adapter.send(request, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 507, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261533471&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261533471 (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 247, in maintain_loop
+    i = sync_check(self)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 306, in sync_check
+    if not isinstance(e.args[0].args[1], BadStatusLine):
+IndexError: tuple index out of range
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connection.py", line 171, in _new_conn
+    (self._dns_host, self.port), self.timeout, **extra_kw)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\util\connection.py", line 79, in create_connection
+    raise err
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\util\connection.py", line 69, in create_connection
+    sock.connect(sa)
+socket.timeout: timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 594, in urlopen
+    self._prepare_proxy(conn)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 815, in _prepare_proxy
+    conn.connect()
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connection.py", line 314, in connect
+    conn = self._new_conn()
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connection.py", line 176, in _new_conn
+    (self.host, self.timeout))
+urllib3.exceptions.ConnectTimeoutError: (<urllib3.connection.VerifiedHTTPSConnection object at 0x00778C30>, 'Connection to 127.0.0.1 timed out. (connect timeout=10)')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 445, in send
+    timeout=timeout
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 638, in urlopen
+    _stacktrace=sys.exc_info()[2])
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\util\retry.py", line 398, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261546910&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261546910 (Caused by ConnectTimeoutError(<urllib3.connection.VerifiedHTTPSConnection object at 0x00778C30>, 'Connection to 127.0.0.1 timed out. (connect timeout=10)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 303, in sync_check
+    r = self.s.get(url, params=params, headers=headers, timeout=config.TIMEOUT)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 525, in get
+    return self.request('GET', url, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 512, in request
+    resp = self.send(prep, **send_kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 622, in send
+    r = adapter.send(request, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 501, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261546910&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261546910 (Caused by ConnectTimeoutError(<urllib3.connection.VerifiedHTTPSConnection object at 0x00778C30>, 'Connection to 127.0.0.1 timed out. (connect timeout=10)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 247, in maintain_loop
+    i = sync_check(self)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 306, in sync_check
+    if not isinstance(e.args[0].args[1], BadStatusLine):
+IndexError: tuple index out of range
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 594, in urlopen
+    self._prepare_proxy(conn)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 815, in _prepare_proxy
+    conn.connect()
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connection.py", line 324, in connect
+    self._tunnel()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 906, in _tunnel
+    (version, code, message) = response._read_status()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 257, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "E:\Program Files (x86)\Python37-32\lib\socket.py", line 589, in readinto
+    return self._sock.recv_into(b)
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 445, in send
+    timeout=timeout
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 638, in urlopen
+    _stacktrace=sys.exc_info()[2])
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\util\retry.py", line 398, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261557940&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261557940 (Caused by ProxyError('Cannot connect to proxy.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 303, in sync_check
+    r = self.s.get(url, params=params, headers=headers, timeout=config.TIMEOUT)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 525, in get
+    return self.request('GET', url, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 512, in request
+    resp = self.send(prep, **send_kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 622, in send
+    r = adapter.send(request, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 507, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261557940&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261557940 (Caused by ProxyError('Cannot connect to proxy.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 247, in maintain_loop
+    i = sync_check(self)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 306, in sync_check
+    if not isinstance(e.args[0].args[1], BadStatusLine):
+IndexError: tuple index out of range
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 594, in urlopen
+    self._prepare_proxy(conn)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 815, in _prepare_proxy
+    conn.connect()
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connection.py", line 324, in connect
+    self._tunnel()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 906, in _tunnel
+    (version, code, message) = response._read_status()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 257, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "E:\Program Files (x86)\Python37-32\lib\socket.py", line 589, in readinto
+    return self._sock.recv_into(b)
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 445, in send
+    timeout=timeout
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 638, in urlopen
+    _stacktrace=sys.exc_info()[2])
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\util\retry.py", line 398, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261560026&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261560026 (Caused by ProxyError('Cannot connect to proxy.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 303, in sync_check
+    r = self.s.get(url, params=params, headers=headers, timeout=config.TIMEOUT)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 525, in get
+    return self.request('GET', url, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 512, in request
+    resp = self.send(prep, **send_kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 622, in send
+    r = adapter.send(request, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 507, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261560026&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261560026 (Caused by ProxyError('Cannot connect to proxy.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 247, in maintain_loop
+    i = sync_check(self)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 306, in sync_check
+    if not isinstance(e.args[0].args[1], BadStatusLine):
+IndexError: tuple index out of range
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 594, in urlopen
+    self._prepare_proxy(conn)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 815, in _prepare_proxy
+    conn.connect()
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connection.py", line 324, in connect
+    self._tunnel()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 906, in _tunnel
+    (version, code, message) = response._read_status()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 257, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "E:\Program Files (x86)\Python37-32\lib\socket.py", line 589, in readinto
+    return self._sock.recv_into(b)
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 445, in send
+    timeout=timeout
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 638, in urlopen
+    _stacktrace=sys.exc_info()[2])
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\util\retry.py", line 398, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261562056&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261562056 (Caused by ProxyError('Cannot connect to proxy.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 303, in sync_check
+    r = self.s.get(url, params=params, headers=headers, timeout=config.TIMEOUT)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 525, in get
+    return self.request('GET', url, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 512, in request
+    resp = self.send(prep, **send_kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 622, in send
+    r = adapter.send(request, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 507, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261562056&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261562056 (Caused by ProxyError('Cannot connect to proxy.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 247, in maintain_loop
+    i = sync_check(self)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 306, in sync_check
+    if not isinstance(e.args[0].args[1], BadStatusLine):
+IndexError: tuple index out of range
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 594, in urlopen
+    self._prepare_proxy(conn)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 815, in _prepare_proxy
+    conn.connect()
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connection.py", line 324, in connect
+    self._tunnel()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 906, in _tunnel
+    (version, code, message) = response._read_status()
+  File "E:\Program Files (x86)\Python37-32\lib\http\client.py", line 257, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "E:\Program Files (x86)\Python37-32\lib\socket.py", line 589, in readinto
+    return self._sock.recv_into(b)
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 445, in send
+    timeout=timeout
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\connectionpool.py", line 638, in urlopen
+    _stacktrace=sys.exc_info()[2])
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\urllib3\util\retry.py", line 398, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261564080&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261564080 (Caused by ProxyError('Cannot connect to proxy.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 303, in sync_check
+    r = self.s.get(url, params=params, headers=headers, timeout=config.TIMEOUT)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 525, in get
+    return self.request('GET', url, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 512, in request
+    resp = self.send(prep, **send_kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\sessions.py", line 622, in send
+    r = adapter.send(request, **kwargs)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\requests\adapters.py", line 507, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='webpush.wx2.qq.com', port=443): Max retries exceeded with url: /cgi-bin/mmwebwx-bin/synccheck?r=1533261564080&skey=%40crypt_f675a980_80ed42bd0d7d74a624784603ca6b9452&sid=wUdV3udVlg8A6Kqr&uin=2942795&deviceid=e692382302219594&synckey=1_679287516%7C2_679288249%7C3_679288221%7C11_679287175%7C201_1533261164%7C1000_1533250859%7C1001_1533250994&_=1533261564080 (Caused by ProxyError('Cannot connect to proxy.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 247, in maintain_loop
+    i = sync_check(self)
+  File "E:\Program Files (x86)\Python37-32\lib\site-packages\itchat\components\login.py", line 306, in sync_check
+    if not isinstance(e.args[0].args[1], BadStatusLine):
+IndexError: tuple index out of range
