@@ -93,6 +93,8 @@ cond(yes)->e
 cond(no)->op
 ```
 
+<progress value="25" max="100" background=orange >25%</progress>
+
 ## 序列图
 
 ```seq
