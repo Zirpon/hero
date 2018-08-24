@@ -8,3 +8,6 @@ red + bold
 
 green + bold
 >echo -e "\033[1;32m[ content ]\033[0m"
+
+yellow
+>echo -e "\033[33m${message}\033[0m"

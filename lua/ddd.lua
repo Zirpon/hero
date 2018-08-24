@@ -1,4 +1,17 @@
+local bigTable = {}
+
+
+for i=1,1000000 do
+    local key = 'dd_big_tableeeeeeeee'..i
+    bigTable.key = i
+    bigTable[i] = key
+end
+
+print("end dddd", #bigTable)
+
+--[[
 local usertable = {}
+
 
 local meta = {}
 meta.n = 0
@@ -35,3 +48,4 @@ usertable.name = nil
 print(usertable.n) 
 usertable.n = 90
 print(usertable.n)
+]]

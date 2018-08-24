@@ -44,3 +44,45 @@ end
 --print( string.gsub("$dd_2, $r_3, $te_2222yyy", [[%$([%w_%d]+)]], "%0 %1" ) )
 
 return result
+
+
+local tmp = {flag=false}
+tmp.flag = {1,35}
+tmp.flags = false
+local oo = {1,35}
+tmp[(oo)] = oo
+-- print(type(tmp.flags))
+print(tmp[oo])
+print(tmp[oo][1])
+print(tmp[oo][2])
+print(oo)
+print(oo[1])
+print(oo[2])
+
+local god = {}
+god.a = 10
+god.b = 3
+god.c = 100
+
+print(god[1])
+local ggod = {}
+for k,v in pairs(god) do
+    table.insert(ggod,{kk=k,vv=v})
+end
+
+for k,v in pairs(ggod) do
+    print(v.kk)
+end
+
+table.sort(ggod, function (a,b)  return a.vv > b.vv end )
+
+for k,v in pairs(ggod) do
+    print(v.kk)
+end
+
+local kkkk = {}
+kkkk[100] = {3,1}
+kkkk[2] = {3,1}
+kkkk[9] = {3,1}
+
+table.remove(kkkk,100)
