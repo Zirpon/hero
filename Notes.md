@@ -9,6 +9,23 @@
 mongod --shutdown  --dbpath=/data/mongodb/
 ```
 
+Development branch status : [![Build Status][travisDevBadge]][travisLink]   [![Build status][AppveyorDevBadge]][AppveyorLink]   [![Build status][CircleDevBadge]][CircleLink]
+
+[travisDevBadge]: https://travis-ci.org/facebook/zstd.svg?branch=dev "Continuous Integration test suite"
+[travisLink]: https://travis-ci.org/facebook/zstd
+[AppveyorDevBadge]: https://ci.appveyor.com/api/projects/status/xt38wbdxjk5mrbem/branch/dev?svg=true "Windows test suite"
+[AppveyorLink]: https://ci.appveyor.com/project/YannCollet/zstd-p0yf0
+[CircleDevBadge]: https://circleci.com/gh/facebook/zstd/tree/dev.svg?style=shield "Short test suite"
+[CircleLink]: https://circleci.com/gh/facebook/zstd
+
+For reference, several fast compression algorithms were tested and compared
+on a server running Linux Debian (`Linux version 4.14.0-3-amd64`),
+
+To solve this situation, Zstd offers a __training mode__, which can be used to tune the algorithm for a selected type of data.
+
+- `make install` : create and install zstd cli, library and man pages
+- `make check` : create and run `zstd`, tests its behavior on local platform
+
 ## 启动/关闭rocket
 
 ### logPath
