@@ -3,8 +3,8 @@
 - cpu: i5-7500 (`4 core|3.40GHz|cache 6144 KB`)
 - mem: 2G
 - clinet: skynet(`skynet mongo driver`)
-- mongodb handle query average 4000 req/s
-- mongodb handle insert average 3400 ~ 3900 req/s
+- mongodb handle query average: 4000 req/s
+- mongodb handle insert average: 3400 ~ 3900 req/s
 
 ## 1. **tb_player test**
 
