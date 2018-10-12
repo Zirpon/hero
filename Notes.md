@@ -73,6 +73,10 @@ cd objdir
 make && make install
 ```
 
+```shell
+export LD_LIBRARY_PATH=/data/cj
+```
+
 ## svn account password
 
 > zhangzhipeng  
