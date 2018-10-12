@@ -10,7 +10,7 @@
 
 > **query**
 
-- test interface: ***testtbplayer.lua***: `FindPlayer(uid, player_id)`
+- test interface: **_testtbplayer.lua_**: `FindPlayer(uid, player_id)`
 - query request size: 88 ~ 119 bytes
 - everytime query request count: 12830
 - request cost time average: 186 ~ 225 us
@@ -33,7 +33,7 @@
 
 > **inesrt**
 
-- test interface: ***testtbsystemparam.lua***: `MT.db:Insert({id=id, name="test", value=0})`
+- test interface: **_testtbsystemparam.lua_**: `MT.db:Insert({id=id, name="test", value=0})`
 - query request size: 203 bytes
 - query request count: 1048576
 - request cost time average: 225.34 us
@@ -46,7 +46,7 @@
 
 > **query**
 
-- test interface: ***testtbsystemparam.lua***: `MT:GetValue(commondef.DBSystemParam.player_id)`
+- test interface: **_testtbsystemparam.lua_**: `MT:GetValue(commondef.DBSystemParam.player_id)`
 - query request size: 78 bytes
 - everytime query request count: 1048576
 - request cost time average: 225.34 us
