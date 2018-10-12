@@ -10,7 +10,7 @@
 
 > **query**
 
-- test interface: testtbplayer.lua: FindPlayer(uid, player_id)
+- test interface: ***testtbplayer.lua***: `FindPlayer(uid, player_id)`
 - query request size: 88 ~ 119 bytes
 - everytime query request count: 12830
 - request cost time average: 186 ~ 225 us
@@ -25,15 +25,15 @@
 
 |     |     |     |
 | :-: | :-: | :-: |
-|![test 1](../resource/tbplayer_query_1.png) |![test 2](../resource/tbplayer_query_2.png) | |
-|![test 3](../resource/tbplayer_query_3.png) |![test 4](../resource/tbplayer_query_4.png) | |
-|![test 5](../resource/tbplayer_query_5.png)
+|![test 1][tbplayer_query_1] |![test 2][tbplayer_query_2] | |
+|![test 3][tbplayer_query_3] |![test 4][tbplayer_query_4] | |
+|![test 5][tbplayer_query_5]
 
 ## 2. **tb_system_param test**
 
 > **inesrt**
 
-- test interface: testtbsystemparam.lua: MT.db:Insert({id=id, name="test", value=0})
+- test interface: ***testtbsystemparam.lua***: `MT.db:Insert({id=id, name="test", value=0})`
 - query request size: 203 bytes
 - query request count: 1048576
 - request cost time average: 225.34 us
@@ -42,11 +42,11 @@
 
 |   |
 |:-:|
-|![insert diagram](../resource/tbsystemparam_insert.png)|
+|![insert diagram][tbsystemparam_insert]|
 
 > **query**
 
-- test interface: testtbsystemparam.lua: MT:GetValue(commondef.DBSystemParam.player_id)
+- test interface: ***testtbsystemparam.lua***: `MT:GetValue(commondef.DBSystemParam.player_id)`
 - query request size: 78 bytes
 - everytime query request count: 1048576
 - request cost time average: 225.34 us
@@ -61,6 +61,20 @@
 
 |     |     |     |
 | :-: | :-: | :-: |
-|![test 1](../resource/tbsystemparam_query_1.png) |![test 2](../resource/tbsystemparam_query_2.png) | |
-|![test 3](../resource/tbsystemparam_query_3.png) |![test 4](../resource/tbsystemparam_query_4.png) | |
-|![test 5](../resource/tbsystemparam_query_5.png)
+|![test 1][tbsystemparam_query_1] |![test 2][tbsystemparam_query_2] | |
+|![test 3][tbsystemparam_query_3] |![test 4][tbsystemparam_query_4] | |
+|![test 5][tbsystemparam_query_5]
+
+---
+
+[tbplayer_query_1]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbplayer_query_1.png "tbplayer_query_1"
+[tbplayer_query_2]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbplayer_query_2.png "tbplayer_query_2"
+[tbplayer_query_3]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbplayer_query_3.png "tbplayer_query_3"
+[tbplayer_query_4]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbplayer_query_4.png "tbplayer_query_4"
+[tbplayer_query_5]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbplayer_query_5.png "tbplayer_query_5"
+[tbsystemparam_insert]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbsystemparam_insert.png "tbsystemparam_insert"
+[tbsystemparam_query_1]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbsystemparam_query_1.png "tbsystemparam_query_1"
+[tbsystemparam_query_2]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbsystemparam_query_2.png "tbsystemparam_query_2"
+[tbsystemparam_query_3]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbsystemparam_query_3.png "tbsystemparam_query_3"
+[tbsystemparam_query_4]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbsystemparam_query_4.png "tbsystemparam_query_4"
+[tbsystemparam_query_5]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/tbsystemparam_query_5.png "tbsystemparam_query_5"
