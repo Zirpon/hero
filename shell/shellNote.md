@@ -24,5 +24,6 @@ insert query update delete getmore command dirty used flushes vsize   res qrw ar
 > cat cj/mongostat.txt | grep "%" | awk -F'[ ;]+' '{split($3,data,"*");if(data[2]>0)print data[2];}'
 > mongostat | grep "%" | awk -F'[ ;]+' '{if($3>0)print $0;}'
 > mongostat | grep "%" | awk -F'[ ;]+' '{if($2>0)print $0;}'
+> k=10.9;mmd=4.9;oo=$(awk 'BEGIN{print ("'$mmd'"+"'$k'")/2;}') ; echo $oo
 
 ```
