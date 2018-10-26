@@ -1,0 +1,125 @@
+syntax = "proto2";
+package Proto;
+
+// [START messages:0x3101,matchgame,匹配玩家]
+
+message MatchGameReq
+{
+	optional uint32 m_MatchType = 1;//匹配类型 1单人 2双人 5五人
+	optional uint32 m_BattleType = 2;//1普通战场
+}
+message MatchGameResp
+{
+	optional uint32 m_Code = 1;//错误码
+}
+// [END messages:0x3101]
+
+// [START messages:0x3102,cancelmatchgame,取消匹配]
+message CancelMatchGameReq
+{
+}
+message CancelMatchGameResp
+{
+	optional uint32 m_Code = 1;//错误码
+}
+// [END messages:0x3102]
+
+// [START messages:0x3103,matchresp,获取战场连接信息]
+message MatchResultReq
+{
+}
+message MatchResultResp
+{
+	optional string m_BattleToken = 1;//战场口令
+	optional string m_Address = 2;//战场地址
+	optional uint32 m_Handle = 3;//战场句柄
+	optional uint32 m_BattleType = 4;//地图id
+	optional uint32 m_MapID = 5;//地图id
+}
+
+// [END messages:0x3103]
+
+// [START messages:0x3104,pickhero,选择英雄]
+message PickHeroReq
+{
+	optional uint32 m_HeroID = 1;//英雄id
+	optional uint32 m_Skin = 2;//英雄皮肤 0默认
+}
+message PickHeroResp
+{
+	optional uint32 m_Code = 1;//错误码
+}
+// [END messages:0x3104]
+
+// [START messages:0x3105,getherolist,获取英雄列表]
+message GetHeroListReq
+{
+}
+message CHeroSkinPBInfo
+{
+	optional uint32 m_Skin = 1;//英雄皮肤 0默认
+	optional uint32 m_Opt = 2;//0未拥有,1已拥有 2限时 3体验
+	optional uint32 m_TimeOut = 3;//体验过期时间
+}
+message CHeroPBInfo
+{
+	optional uint32 m_HeroID = 1;
+	optional uint32 m_Opt = 2;//0未拥有,1已拥有 2限时 3体验
+	repeated CHeroSkinPBInfo m_Skins = 3;//英雄皮肤
+	optional uint32 m_TimeOut = 4;//体验过期时间
+}
+message GetHeroListResp
+{
+	repeated CHeroPBInfo m_HeroList = 1;//
+}
+// [END messages:0x3105]
+
+
+// [START messages:0x3106,beginbattle,开始吃鸡(删除)]
+message BeginBattleResp
+{
+}
+// [END messages:0x3106]
+
+// [START messages:0x3107,flow_ctrl,流程控制]
+message FlowCtrlResp
+{
+	optional uint32 m_Opt = 1;//1匹配成功，等待确认 2匹配失败(回到匹配队列) 3已确认人数 4开始选择英雄 5结束选择英雄 6开始游戏 7匹配失败(退出匹配队列)
+	optional uint32 m_Timeout = 2;//匹配成功，等待确认倒计时(秒)
+	optional uint32 m_PlayerCnt = 3;//匹配成功，玩家总人数
+	optional uint32 m_PlayerComit = 4;//当前未确认人数
+}
+// [END messages:0x3107]
+
+// [START messages:0x3108,load_complete,客户端战场加载完毕]
+message loadCompleteReq
+{
+}
+message loadCompleteResp
+{
+}
+// [END messages:0x3108]
+// [START messages:0x3109,battle_comfirm,确认加入]
+message battleConfirmReq
+{
+}
+message battleConfirmResp
+{
+}
+// [END messages:0x3109]
+
+// [START messages:0x310A,get_team_heros,获取当前队伍英雄信息]
+message CTeamHeroInfo
+{
+        optional  uint64 m_PlayerID = 1;
+        optional  CHeroPBInfo m_HeroInf = 2;
+}
+message getTeamHerosReq
+{
+}
+message getTeamHerosResp
+{
+        repeated CTeamHeroInfo m_TeamHeroList = 1;//队伍英雄列表
+}
+// [END messages:0x310A]
+

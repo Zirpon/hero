@@ -1,0 +1,28 @@
+/**
+ * @breif gm指令
+ */
+syntax = "proto2";
+package Proto;
+
+// [START messages:0xEFFE,gm_code,gm指令]
+
+message gmCodeReq
+{
+	optional uint32 m_Code = 1;
+	optional string m_Param = 2;
+}
+message gmCodeResp
+{
+}
+// [END messages:0xEFFE]
+
+//说明
+//m_Code:
+//1-修改玩家匹配积分
+//	m_Param:'{"val":0}'
+//2-修改玩家货币
+//	m_Param:'{"type":0,"val":0}' type-货币类型
+//3-修改玩家经验
+//	m_Param:'{"val":0}'
+//4-返回大厅
+//	m_Param:''

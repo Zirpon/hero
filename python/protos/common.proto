@@ -1,0 +1,20 @@
+syntax = "proto2";
+package Proto;
+
+message CPBMoneyObj
+{
+	optional uint32 m_Type = 1;// 1金币 2点券 3钻石 10当前经验
+	optional uint32 m_Num = 2;//数量
+}
+message CPBItemObj
+{
+	optional uint32 m_ItemID = 1;//道具id
+	optional uint32 m_Num = 2;//道具数量
+	optional uint32 m_Tick = 3;//获得时间
+}
+message CPBPlayerIcon
+{
+	optional uint32 m_IconID = 1;//头像id
+	optional uint32 m_KIconID = 2;//头像框id
+	optional uint32 m_Marks = 3;//积分
+}

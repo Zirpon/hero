@@ -1,0 +1,39 @@
+syntax="proto2";
+package Proto;
+//0x7001,强制结束战场
+message CBattleFinish
+{
+	optional uint32 m_ResultType = 1; // 1. 和局 2. 投降 3. 击败
+	optional uint32 m_WinGroupid = 2; // 胜方阵营id
+}
+// 0x7002 玩家加入
+message CAddPlayer
+{
+	optional uint32 m_Model = 1;	//角色模型(英雄id)
+	optional string m_PlayerName = 2;	//玩家名字
+	optional uint32 m_Posx = 3;		//x,y,z角色出身位置
+	optional uint32 m_Posy = 4;
+	optional uint32 m_Posz = 5;
+	optional uint32 m_HeroSkin = 6;//英雄皮肤
+	optional uint64 m_PlayerID = 7;//玩家id
+	optional uint32 m_GroupID = 8;//阵营id
+}
+//0x7003 英雄变更
+message CChangeHero
+{
+	optional uint32 m_Model = 1;//英雄id
+	optional uint32 m_HeroSkin = 2;//英雄皮肤
+}
+
+//0x7004 确认结束战场
+message CConfirmFinish
+{
+	optional uint32 m_ResultType = 1; // 1. 和局 2. 投降 3. 击败
+	optional uint32 m_WinGroupid = 2; // 胜方阵营id, 和局 0
+}
+
+//0x7005 战场开始
+message CBattleBegin
+{
+	optional uint32 m_Randomseed = 1; // 战场随机种子
+}

@@ -1,0 +1,251 @@
+syntax="proto2";
+package Proto;
+
+message CBattleCMD
+{
+	optional uint32 m_CMD = 1;
+	optional bytes m_Input = 2;
+}
+// [START messages:0x3001,battleinputcmd,输入指令]
+message battleInputReq
+{
+	repeated CBattleCMD  m_Cmds = 1;
+}
+message battleInputResp
+{
+	optional uint32 rc = 1;
+}
+// [END messages:0x3001]
+
+// [START messages:0x3002,battlecmd,当前帧玩家指令]
+message CPlayerBattleCMD
+{
+	repeated CBattleCMD  m_Cmds = 2;
+}
+message battleCmdResp
+{
+	optional uint32 m_FrameNO = 1;
+	repeated CPlayerBattleCMD  m_BattleCmds = 3;
+}
+// [END messages:0x3002]
+
+// [START messages:0x3003,joinbattle,加入战场]
+message joinBattleReq
+{
+	optional uint64 m_PlayerId = 1;
+	optional uint32 m_FrameNO = 2;//客户端已接收的最后一个逻辑帧编号，用于短线重连
+	optional string m_Token = 3;//登陆token MD5(pkey+session)
+}
+
+message joinBattleResp
+{
+	optional uint32 rc = 1;
+	repeated battleCmdResp m_BattleCmds= 2;
+//	optional uint32 m_Sta = 3;//战场状态 1出生岛 2开始吃鸡 3结束
+	optional string snapshot = 4;
+	optional uint32 m_Randomseed = 5;
+}
+// [END messages:0x3003]
+
+// [START messages:0x3004,getframe,获取帧数据]
+message getFrameReq
+{
+	optional uint32 m_Begin = 1;//开始帧(包括)
+	optional uint32 m_End = 2;//结束帧(包括)
+}
+message getFrameResp
+{
+	repeated battleCmdResp m_BattleCmds= 2;
+}
+// [END messages:0x3004]
+
+// [START messages:0x3005,battleRecord,战场录像]
+message BattleFrame
+{
+	optional uint32 frameNO = 1;
+	repeated CPlayerBattleCMD cmds = 2;
+}
+message BattleRecordResp
+{
+	optional uint32 m_step = 1;
+	repeated BattleFrame m_lsOrder = 2;
+}
+// [END messages:0x3005]
+
+////////////////////////////////////////////非帧协议///////////////////////////////////////////
+// 投降协议
+// [START messages:0x3201,surrender_apply,申请投降]
+message surrenderApplyReq
+{
+
+}
+message surrenderApplyResp
+{
+	optional int32  m_code = 1;
+}
+// [END messages:0x3201]
+
+// [START messages:0x3202,surrender_vote,投降投票]
+message surrenderVoteReq
+{
+	optional uint32 m_VoteType = 1; // 1. 同意 2. 不同意
+}
+message surrenderVoteResp
+{
+	optional int32  m_code = 1;
+}
+// [END messages:0x3202]
+
+// [START messages:0x3203,surrender_broadcast,投降广播]
+message surrenderBroadcastResp
+{
+	optional uint32 m_BroadcastType = 1; 	// 1. 投降申请广播 2. 投票广播 3. 结果广播 
+	repeated uint32 m_vote = 2;				// 1. 同意 2. 不同意
+	optional int32 m_SurrenderResult = 3; 	// 投票结果 1. 投降成功 2. 投降失败
+	optional uint32 m_SurrenderEndTime = 4; // 投票结束时间
+	optional uint64 m_ReqPlayerId = 5;		// 申请者ID
+}
+// [END messages:0x3203]
+
+// [START messages:0x3204,notice_snapshotPush,通知client推送快照]
+message noticeSnapshotPushResp
+{
+
+}
+// [END messages:0x3204]
+
+// [START messages:0x3205,snapshot_push,client推送快照]
+message pushSnapshotReq
+{
+	optional uint32 m_frameNO = 1;
+	optional string m_image = 2;
+}
+
+message pushSnapshotResp
+{
+	optional int32 m_code = 1;
+}
+// [END messages:0x3205]
+
+
+// [START messages:0x3206,notice_cmdcheck,通知client校验cmd]
+message noticeCmdCheckResp
+{
+	optional uint64 m_ObjIndex = 1;
+	repeated CPlayerBattleCMD m_Cmds = 2;
+}
+// [END messages:0x3206]
+
+// [START messages:0x3207,cmdcheck_pushResult,client推送cmd校验结果]
+message pushCmdCheckResultReq
+{
+	optional uint64 m_ObjIndex = 1;
+	optional string m_Eigenvalues = 2;
+}
+
+message pushCmdCheckResultResp
+{
+	optional int32 m_code = 1;
+}
+// [END messages:0x3207]
+
+
+
+
+
+
+message CSPoint 
+{
+    required sint32 x = 1;
+    required sint32 z = 2;
+}
+
+message CSPoint3
+{
+	required sint32 x = 1;
+	required sint32 y = 2;
+	required sint32 z = 3;
+}
+
+message Msg_UnitMove
+{
+    required uint32 unitId = 1;
+    repeated CSPoint lstPath = 2;
+    required bool changeForward = 3;
+    required int32 moveType = 4;
+}
+
+message Msg_UnitStopMove
+{
+    required uint32 unitId = 1;
+}
+
+message Msg_UnitForward
+{
+    required uint32 unitId = 1;
+    required CSPoint forward = 2;
+    required bool immediately = 3;
+}
+
+message Msg_UnitMoveForward
+{
+    required uint32 unitId = 1;
+    required CSPoint forward = 2;
+}
+
+message Msg_UnitCastSpell
+{
+    required uint32 unitId = 1;
+    required uint32 skillId = 2;
+    required uint32 targetId = 3;
+    required CSPoint targetPos = 4;
+    required CSPoint targetDir = 5;
+	required CSPoint castPos = 6;
+}
+
+message Msg_UnitBreakSkill
+{
+    required uint32 unitId = 1;
+    required uint32 skillId = 2;
+}
+
+message Msg_UnitStopMoveForward
+{
+    required uint32 unitId = 1;
+}
+
+message Msg_UpdateUnit
+{
+    required uint64 playerId = 1;
+    required uint32 oldUnitId = 2;
+    required int32 unitType = 3;
+    required int32 resId = 4;
+    required CSPoint bornPosition = 5;
+}
+
+message Msg_AddBuff
+{
+    required uint32 unitId = 1;
+	required int32 buffId = 2;
+	required int32 resId = 3;
+}
+
+message Msg_RemoveBuff
+{
+    required uint32 unitId = 1;
+	required int32 buffId = 2;
+}
+
+message Msg_SkillInput
+{
+    required uint32 unitId = 1;
+    required uint32 skillId = 2;
+	required int32 eventType = 3;
+	required CSPoint param = 4;
+}
+
+message Msg_Jump
+{
+    required uint32 unitId = 1;
+	required CSPoint dir = 2;
+}

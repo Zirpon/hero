@@ -1,0 +1,121 @@
+/**
+ * @breif 登陆模块xxx
+ * @author zijie_li
+ */
+
+syntax = "proto2";
+package Proto;
+
+import "common.proto";
+
+// [START messages:0x1001,accountLogin,账号登陆]
+
+// 账号登陆
+message AccountLoginReq
+{
+  // 渠道uid
+  optional string m_UID = 1;
+
+  // 渠道token
+  optional string m_SDKToken = 2;
+
+  // 客户端版本号(4位)
+  // 1. 客户端第一、二位必须与服务器相同
+  optional string version = 3;
+
+  optional uint32 m_Platform = 4;//0裸包 1Android  2ios  
+  
+  optional string m_PrivateKey = 5;//登陆私钥
+}
+
+message AccountLoginResp
+{
+  // 错误码。
+  // 详细见ErrorCodeDefines.lua
+  optional int32 m_Code = 1;
+
+  // 角色ID
+  optional bool m_CreateRole = 2;
+
+  // GameSvr角色验证token
+  optional string m_LoginToken = 3;
+
+  // gameSvr地址
+  // 格式: (域名 or ip):port
+  optional string m_GameAdress = 4;
+}
+// [END messages:0x1001]
+
+// [START messages:0x1002,roleCreate,角色创建]
+message RoleCreateReq
+{
+  // 渠道uid
+  optional string m_UID = 1;
+
+  // 角色名称
+  // 1. 长度限制
+  // 2. 字符限制
+  optional string m_PlayerName = 2;
+}
+
+message RoleCreateResp
+{
+  // 错误码。
+  // 详细见ErrorCodeDefines.lua
+  optional int32 m_Code = 1;
+
+  // GameSvr角色验证token
+  optional string m_LoginToken = 3;
+
+  // gameSvr地址
+  // 格式: (域名 or ip):port
+  optional string m_GameAdress = 4;
+}
+// [END messages:0x1002]
+
+// [START messages:0x1003,roleLogin,角色登陆]
+message RoleLoginReq
+{
+  // 渠道uid
+  optional string m_UID = 1;
+
+  // 角色校验token=md5(m_PrivateKey登陆私钥 + m_LoginToken)
+  optional string m_Token = 2;
+}
+message RoleLoginResp
+{
+  // 错误码。
+  // 详细见ErrorCodeDefines.lua
+  optional int32 m_Code = 1;
+
+  // 登陆角色对应的账号ID
+  optional string m_UID = 2;
+
+  optional uint64 m_PlayerID = 3;
+  
+  // 角色名称
+  optional string m_PlayerName = 4;
+
+  // 角色金币
+  optional int32 m_Gold = 5;
+
+  // 角色等级
+  optional int32 m_Level = 6;
+  
+  optional uint32 m_MatchProce = 7;//匹配流程进度:1在战场中 6正在选择英雄 7战场加载中
+  
+  repeated CPBMoneyObj m_Money = 12;//货币
+  optional uint32 m_Exp = 13;//当前等级经验值
+  optional CPBPlayerIcon m_Icon = 14;//头像
+  optional uint32 m_MapID = 15;//当前所在战场地图id
+}
+// [END messages:0x1003]
+
+// [START messages:0xEFFF,keepalive,心跳(间隔5s)]
+message KeepaliveReq
+{
+}
+message KeepaliveResp
+{
+}
+// [END messages:0xEFFFF]

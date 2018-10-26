@@ -1,0 +1,34 @@
+syntax = "proto2";
+package Proto;
+
+enum EOpcode
+{
+	//老协议
+	battleinputcmd = 0x3001, //输入指令
+	battlecmd = 0x3002, //当前帧玩家指令
+	joinbattle = 0x3003, //加入战场
+	getframe = 0x3004, //获取帧数据
+	battleRecord = 0x3005, //战场录像
+	surrender_apply = 0x3201, //申请投降
+	surrender_vote = 0x3202, //投降投票
+	surrender_broadcast = 0x3203, //投降广播
+	notice_snapshotPush = 0x3204, //通知client推送快照
+	snapshot_push = 0x3205, //client推送快照
+	notice_cmdcheck = 0x3206, //通知client校验cmd
+	cmdcheck_pushResult = 0x3207, //client推送cmd校验结果
+	gm_code = 0xEFFE, //gm指令
+	accountLogin = 0x1001, //账号登陆
+	roleCreate = 0x1002, //角色创建
+	roleLogin = 0x1003, //角色登陆
+	matchgame = 0x3101, //匹配玩家
+	cancelmatchgame = 0x3102, //取消匹配
+	matchresp = 0x3103, //获取战场连接信息
+	pickhero = 0x3104, //选择英雄
+	getherolist = 0x3105, //获取英雄列表
+	beginbattle = 0x3106, //开始吃鸡(删除)
+	flow_ctrl = 0x3107, //流程控制
+	load_complete = 0x3108, //客户端战场加载完毕
+	battle_comfirm = 0x3109, //确认加入
+	get_team_heros = 0x310A, //获取当前队伍英雄信息
+}
+
