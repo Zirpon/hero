@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+
+# 关于python unicode 对象 与 字符串对象的测试代码 正则表达式的测试代码 读写文件的测试代码 文件后缀的测试代码
+
 from os import path as op
 import os
 import sys
 import re
 
-s1 = '中文'
-s2 = u'你好'
+#s1 = '中文'
+#s2 = u'你好'
 #print s1 + unicode(s2, 'utf-8')   # 中文你好
 #print s1 + s2.decode('utf-8')     # 中文你好
 #print s1.encode('utf-8') + s2     # 中文你好
