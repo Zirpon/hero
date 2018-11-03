@@ -77,10 +77,15 @@ make && make install
 export LD_LIBRARY_PATH=/data/cj
 ```
 
-## svn account password
+## cj svn account password
 
 > zhangzhipeng  
 > Zhipeng123123
+
+## gunsoul svn account password
+
+> zhipeng_zhang
+> zhipeng_zhang321
 
 ## Internet ip
 
