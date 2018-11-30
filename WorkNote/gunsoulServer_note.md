@@ -168,6 +168,6 @@ if (configInfo.getOrderBy() != null && configInfo.getOrderBy().length > 0) {
 public class ConfigService extends UniversalManagerImpl implements IConfigService {}
 ```
 
-configInfo 是MySQL表结构信息 getOrderBy返回的是表的某一列名字 
+configInfo 是MySQL表结构信息 getOrderBy返回的是表的某一列名字
 getConfigService 返回 ConfigService, ConfigService 继承 UniversalManagerImpl, UniversalManagerImpl 能够获取 注册hibernate的dao Bean对象
 getAll是获取整张表数据 list 就是数据列表
