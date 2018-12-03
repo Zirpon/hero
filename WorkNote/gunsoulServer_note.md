@@ -152,7 +152,7 @@ mina 框架 参考:
 - [mina框架详解](https://www.cnblogs.com/duanxz/p/5143227.html)
 - [I/O通信模型(BIO,NIO,AIO)](https://www.cnblogs.com/duanxz/p/5143234.html)
 
-## ConfigService Hibernate DAO
+## ConfigService spring Hibernate DAO
 
 ```java
 Class<E> clazz = configInfo.getClazz();
