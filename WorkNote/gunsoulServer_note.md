@@ -171,3 +171,116 @@ public class ConfigService extends UniversalManagerImpl implements IConfigServic
 configInfo 是MySQL表结构信息 getOrderBy返回的是表的某一列名字
 getConfigService 返回 ConfigService, ConfigService 继承 UniversalManagerImpl, UniversalManagerImpl 能够获取 注册hibernate的dao Bean对象
 getAll是获取整张表数据 list 就是数据列表
+
+## 配置表
+
+TM.java 的 effectRemarkMap 来源于 私有成员prop(str2value_CN.properties)
+CPT.java  configparam 来源于 configParam.properties
+worldPlayer:playerdata
+
+```java
+String[] multiEffectIds = effectIds.split(Common.SPLIT_CHART);
+            String oneEffectIds;
+            int len = multiEffectIds.length;
+            if (len == 1) {
+                oneEffectIds = multiEffectIds[0];
+            } else {
+                int index = RandomUtils.nextInt(0, len);
+                oneEffectIds = multiEffectIds[index];
+            }
+String effectId;
+    if (oneEffectIds.contains("-")) {
+        String[] strEffectIds = oneEffectIds.split("-");
+        int start = Integer.parseInt(strEffectIds[0]);
+        int end = Integer.parseInt(strEffectIds[1]);
+        if (start == end) {
+            effectId = start + "";
+        }
+    }
+```
+
+## Thread Service
+
+```java
+public class ThreadService {
+    private final GameExecutor[]              gameExec;
+    private final ExecutorService             dbExec;
+    private final ScheduledThreadPoolExecutor scheduledExec;
+
+    public ThreadService(int gameThreadCount, int dbThreadCount) {
+        dbExec = new ThreadPoolExecutor(dbThreadCount / 2, dbThreadCount, 60L,
+            TimeUnit.SECONDS, new LinkedTransferQueue<Runnable>(),
+            new ThreadFactory() {
+                private final AtomicInteger idCounter = new AtomicInteger(0);
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r, "DB_WORKER_" + idCounter.getAndIncrement());
+                    t.setPriority(Thread.NORM_PRIORITY);
+                    return t;
+                }
+            }
+        );
+
+        int scheduledThreadCount = 8;
+        scheduledExec = new ScheduledThreadPoolExecutor(scheduledThreadCount,
+            new ThreadFactory() {
+                private final AtomicInteger idCounter = new AtomicInteger(0);
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setPriority(Thread.MAX_PRIORITY);
+                    t.setName("UPDATE_WORKER_" + idCounter.getAndIncrement());
+                    return t;
+                }
+            }
+        );
+}
+```
+
+ThreadPoolExecutor, ScheduledThreadPoolExecutor 这两个线程池
+
+```java
+public class MergeFrameService {
+    private final Pair<IntHashMap<FightScene>, ReusableIterator<FightScene>>[] scenes;
+
+    public MergeFrameService(final ThreadService threadService) {
+        this.threadService = threadService;
+        scenes = new Pair[threadService.getGameThreadCount()];
+        for (int i = 0; i < scenes.length; i++) {
+            IntHashMap<FightScene> map = new IntHashMap<FightScene>();
+            scenes[i] = Pair.of(map, map.newValueIterator());
+        }
+        threadService.getScheduledExecutorService().scheduleAtFixedRate(
+            new Runnable() {
+                public void run() {
+                    try {
+                        for (int i = 0; i < scenes.length; i++) {
+                            final Pair<IntHashMap<FightScene>, ReusableIterator<FightScene>> pair = scenes[i];
+                            threadService.getExecutor(i).execute(
+                                new Runnable() {
+                                    public void run() {
+                                        ReusableIterator<FightScene> iterator = pair.right;
+                                        for (iterator.rewind(); iterator.hasNext();) {
+                                            FightScene scene = iterator.next();
+                                            boolean isRemove = scene.tickAndSend();
+                                            if (isRemove) {
+                                                iterator.remove();
+                                                scene.onThisBeenRemoved(true);
+                                            }
+                                        }
+                                        iterator.cleanUp();
+                                    }
+                                }
+                            );
+                        }
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, 0, Common.FRAME_PERIOD, TimeUnit.MILLISECONDS
+        );// TODO 优化可以把tick分开在不同时间执行，分散系统压力
+    }
+}
+```
