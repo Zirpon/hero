@@ -8,8 +8,8 @@
 ## cmd
 
 > list : source code
-> >> break n
-> >> break func
+> break n
+> break func
 > break ... if i = 100
 > info break
 
