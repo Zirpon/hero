@@ -28,12 +28,6 @@ iptables -I INPUT -s 223.96.0.0/12 -p tcp --dport 9902 -j ACCEPT
 iptables -I INPUT -s 223.104.60.0/22 -p tcp --dport 9902 -j ACCEPT
 ```
 
-|   device  |   ip  |
-|   ---     |   --- |
-|   宿舍    |   116.22.132.155  |
-|   公司    |   113.111.185.3,113.111.245.62    |
-|   手机    |   223.104.63.111  |
-
 - iptables -F 清除预设表filter中的所有规则链的规则
 - iptables -X 清除预设表filter中使用者自定链中的规则
 - iptables -L -n 查看本机关于IPTABLES的设置情况 **远程连接规则将不能使用**
