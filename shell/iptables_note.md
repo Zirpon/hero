@@ -55,7 +55,6 @@ iptables -I INPUT -s 223.104.60.0/22 -p tcp --dport 9902 -j ACCEPT
 -A INPUT -p tcp --dport 9905 -j DROP
 -A INPUT -p tcp --dport 9902 -j DROP
 COMMIT
-
 ```
 
 - iptables -F 清除预设表filter中的所有规则链的规则
