@@ -28,6 +28,36 @@ iptables -I INPUT -s 223.96.0.0/12 -p tcp --dport 9902 -j ACCEPT
 iptables -I INPUT -s 223.104.60.0/22 -p tcp --dport 9902 -j ACCEPT
 ```
 
+- /etc/sysconfig/iptables
+
+```config
+# sample configuration for iptables service
+# you can edit this manually or use system-config-firewall
+# please do not ask us to add additional ports/services to this default configuration
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+#-A INPUT -j REJECT --reject-with icmp-host-prohibited
+#-A FORWARD -j REJECT --reject-with icmp-host-prohibited
+
+
+-A INPUT -s 113.111.0.0/16 -p tcp --dport 9902 -j ACCEPT
+-A INPUT -s 116.22.128.0/20 -p tcp --dport 9902 -j ACCEPT
+-A INPUT -s 223.104.60.0/22 -p tcp --dport 9902 -j ACCEPT
+#-A INPUT -s 223.104.63.111 -p tcp --dport 9902 -j ACCEPT
+#-A INPUT -s 116.22.132.155 -p tcp --dport 9902 -j ACCEPT
+#-A INPUT -s 116.22.134.122 -p tcp --dport 9902 -j ACCEPT
+-A INPUT -p tcp --dport 9905 -j DROP
+-A INPUT -p tcp --dport 9902 -j DROP
+COMMIT
+
+```
+
 - iptables -F 清除预设表filter中的所有规则链的规则
 - iptables -X 清除预设表filter中使用者自定链中的规则
 - iptables -L -n 查看本机关于IPTABLES的设置情况 **远程连接规则将不能使用**
