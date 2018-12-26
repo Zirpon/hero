@@ -284,3 +284,69 @@ public class MergeFrameService {
     }
 }
 ```
+
+## CacheConfig
+
+```java
+    /**
+     * 增加其它缓存配置信息值（主要用于缓存值只有一个字段）
+     *
+     * @param strings 多个字段名（默认最后一个为value）
+     * @throws Exception 参数出错时抛出上异常
+     */
+    void addOtherFieldValue(String... strings) throws Exception {
+        int len = strings.length;
+        if (len < 2) {
+            throw new Exception("strings length error: " + strings.length);
+        }
+        if (otherDataMapList == null) {
+            otherDataMapList = new ArrayList<>();
+        }
+        if (this.otherFileMap == null) {
+            this.otherFileMap = new java.util.LinkedHashMap<>();
+        }
+        int valueIndex = len - 1;
+        String[] key = new String[valueIndex];
+        System.arraycopy(strings, 0, key, 0, valueIndex);
+        String value = strings[valueIndex];
+        this.otherFileMap.put(key, new String[]{value});
+        this.otherDataMapList.add(new HashMap<>());
+    }
+
+    /**
+     * 设置其它字段缓存信息
+     *
+     * @param configInfo       缓存配置信息
+     * @param otherDataMapList 其它字段缓存信息配置信息
+     * @param e                元素信息
+     * @throws Exception 设置值出错时抛出此异常
+     */
+    private static <E> void setOtherFieldObject(ConfigInfo<E> configInfo, List<Map<Object, Object>> otherDataMapList,
+            E e) throws Exception {
+        Map<String[], String[]> otherFieldMap = configInfo.getOtherFileMap();
+        if (otherFieldMap != null && !otherFieldMap.isEmpty()) {
+            int sort = 0;
+            for (Map.Entry<String[], String[]> entry : otherFieldMap.entrySet()) {
+                Map<Object, Object> tempOtherMap = otherDataMapList.get(sort);
+                Object keyValue = CacheUtil.getFieldKeysValue(entry.getKey(), e);
+                Object objValue = null;
+                // 对其它缓存信息做特殊处理，当其它缓存信息为类本身时，设置自身值
+                if (entry.getValue().length == 1 && entry.getValue()[0].equals(configInfo.getClazzName())) {
+                    objValue = e;
+                } else {
+                    objValue = CacheUtil.getFieldValues(entry.getValue(), e);
+                }
+                if (objValue != null) {
+                    tempOtherMap.put(keyValue, objValue);
+                }
+                sort++;
+            }
+        }
+    }
+
+    // 随机名称
+    ConfigInfo<RandomName> randomNameConfigInfo = new ConfigInfo<>(RandomName.class, false);
+    randomNameConfigInfo.setNeedList(false);
+    randomNameConfigInfo.addOtherFieldValue("id", "name");
+    CacheUtil.addConfig(CacheUtil.getCacheDataMapKey(RandomName.class), randomNameConfigInfo);
+```

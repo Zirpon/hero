@@ -84,8 +84,13 @@ export LD_LIBRARY_PATH=/data/cj
 
 ## gunsoul svn account password
 
+内网
 > zhipeng_zhang
 > zhipeng_zhang321
+
+外网
+> zhipeng_zhang
+> Zhipeng2233
 
 ## Internet ip
 
