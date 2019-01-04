@@ -27,3 +27,8 @@ insert query update delete getmore command dirty used flushes vsize   res qrw ar
 > k=10.9;mmd=4.9;oo=$(awk 'BEGIN{print ("'$mmd'"+"'$k'")/2;}') ; echo $oo
 
 ```
+
+## traceroute
+
+- windows tracert
+- linux traceroute
