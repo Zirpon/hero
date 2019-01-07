@@ -32,3 +32,11 @@ insert query update delete getmore command dirty used flushes vsize   res qrw ar
 
 - windows tracert
 - linux traceroute
+
+## 关机
+
+- windows:
+    > shutdown -s -t 0
+    > shutdown -r -t 0
+- linux:
+    > shutdown -P now
