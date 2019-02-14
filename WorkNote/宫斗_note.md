@@ -83,3 +83,94 @@ RemoteAccount
 WorldServer
 ChatServer
 NetGate
+
+## 登录流程
+
+客户 ->CLIENT_ACCOUNT_LoginRequest ->账号服接收并向远程账号服验证RA_LoginRst ->世界服接收并转发协议 -> 远程账号服返回RA_LoginAck ->世界服转发协议 -> 账号服向世界服发送账号信息及角色列表ACCOUNT_WORLD_ClientLoginRequest ->世界服返回ACCOUNT_WORLD_ClientLoginResponse ->账号服返回客户端CLIENT_ACCOUNT_LoginResponse
+
+## 程序设计结构 以 RemoteAccount 为例
+
+```C++
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* 协议处理函数注册 */
+
+#define ServerEventFunction(c,funct,message)  \
+bool __ef_##funct(int socketId, stPacketHead* phead, Base::BitStream* pPack ); \
+EventFunctionBuilder<c> _ef_##funct##builder( message, __ef_##funct ); \
+bool __ef_##funct(int socketId, stPacketHead* phead, Base::BitStream* pPack )
+
+template< typename ServerClass >
+struct EventFunctionBuilder
+{
+    template< typename _Ty >
+    EventFunctionBuilder( const char* msg, _Ty function ) {
+        ServerClass::getInstance()->mMsgCode.Register(msg, function);
+    }
+};
+
+// 目前这个消息用于ACCOUNT向REMOTE请求服务器玩家数据
+ServerEventFunction( CRemoteAccount, HandleAccountWorldInfoRequest, ACCOUNT_REMOTE_PlayerCountRequest ) {}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* 消息队列 */
+class WorkQueen {
+
+    bool Initialize(WORK_QUEUE_FN fn,int ThreadNum,const char*Name, int iTimeOut) {
+        // fn => _eventProcess
+        m_Callback = fn;
+    }
+
+    bool PostEvent(int Id,void *data,int size,bool CopyData=false,WORKQUEUE_MESSGAE QueueMsg=WQ_PACKET) {
+        BOOL ret = PostQueuedCompletionStatus(m_QueueHandle,0,(int)QueueMsg,(LPOVERLAPPED)pStruct);
+    }
+
+    static unsigned int WINAPI WorkRoutine(LPVOID Param) {
+        while(1) {
+            if(!::GetQueuedCompletionStatus(pQueue->m_QueueHandle, &dwByteCount, (ULONG_PTR *)&dwCode,(LPOVERLAPPED*)&pData, pQueue->m_WaitTime)){}
+
+            pQueue->m_Callback(pData);
+            if(pQueue->m_WaitTime != INFINITE)
+                pQueue->GetTimerMgr().trigger();
+        }
+    }
+
+    static int _eventProcess( LPVOID param ) {
+        WorkQueueItemStruct *pItem = (WorkQueueItemStruct*)param;
+
+        switch(pItem->opCode) {
+            case WQ_CONNECT:
+            case WQ_DISCONNECT:
+            case WQ_PACKET:
+                stPacketHead* pHead = (stPacketHead*)pItem->Buffer;
+                msg = pHead->Message;
+                if(getInstance()->mMsgCode.IsValid(pHead->Message))
+                {
+                    char *pData = (char *)(pHead) + IPacket::GetHeadSize();
+                    Base::BitStream RecvPacket(pData,pItem->size-IPacket::GetHeadSize());
+                    Base::BitStream* pPacket = &RecvPacket;
+                    return getInstance()->mMsgCode.Trigger(pItem->Id,pHead,RecvPacket);
+                }
+            case WQ_CONFIGMONITOR:
+            case WQ_TIMER:
+            case WQ_LOGIC:
+            default:
+                break;
+        }
+    }
+}
+
+void HandleClientLogin() {
+    T::getInstance()->getWorkQueue()->PostEvent(m_pSocket->GetClientId(),IP,sStrlen(IP,COMMON_STRING_LENGTH)+1,true,WQ_CONNECT);
+}
+
+void HandleClientLogout() {
+    T::getInstance()->getWorkQueue()->PostEvent(m_pSocket->GetClientId(),NULL,0,false,WQ_DISCONNECT);
+}
+
+bool HandleGamePacket(stPacketHead *pHead,int iSize) {
+    T::getInstance()->getWorkQueue()->PostEvent(m_pSocket->GetClientId(),pHead,iSize,true);
+    return true;
+}
+
+```
