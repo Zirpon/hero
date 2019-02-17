@@ -181,5 +181,5 @@ bool HandleGamePacket(stPacketHead *pHead,int iSize) {
 
 ---
 
-[login_flowchat]: ../resource/宫斗登录流程图.png "宫斗登录流程图"
-[server_framework]: ../resource/宫斗服务器架构图.png "宫斗服务器架构图"
+[login_flowchat]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/宫斗登录流程图.png "宫斗登录流程图"
+[server_framework]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/宫斗服务器架构图.png "宫斗服务器架构图"
