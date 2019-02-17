@@ -92,7 +92,23 @@ NetGate
 
 ![服务器架构图][server_framework]
 
-## 程序设计结构 以 RemoteAccount 为例
+## Windows API
+
+```c++
+
+USES_CONVERSION;
+UseGB2312;
+pStr = A2W(pInchar);
+
+_Check_return_ _Ret_maybenull_
+_When_(return != NULL, _Ret_range_(_String, _String+_String_length_(_String)-1))
+inline wchar_t* __CRTDECL wcsstr(_In_z_ wchar_t* _String, _In_z_ wchar_t const*_SubStr)
+{
+    return const_cast<wchar_t*>(wcsstr(static_cast<wchar_t const*>(_String), _SubStr));
+}
+```
+
+## 程序设计结构 (以 RemoteAccount 为例)
 
 ```C++
 
