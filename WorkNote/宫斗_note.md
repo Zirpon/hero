@@ -86,7 +86,11 @@ NetGate
 
 ## 登录流程
 
-客户 ->CLIENT_ACCOUNT_LoginRequest ->账号服接收并向远程账号服验证RA_LoginRst ->世界服接收并转发协议 -> 远程账号服返回RA_LoginAck ->世界服转发协议 -> 账号服向世界服发送账号信息及角色列表ACCOUNT_WORLD_ClientLoginRequest ->世界服返回ACCOUNT_WORLD_ClientLoginResponse ->账号服返回客户端CLIENT_ACCOUNT_LoginResponse
+![登录流程][login_flowchat]
+
+## 服务器架构图
+
+![服务器架构图][server_framework]
 
 ## 程序设计结构 以 RemoteAccount 为例
 
@@ -174,3 +178,8 @@ bool HandleGamePacket(stPacketHead *pHead,int iSize) {
 }
 
 ```
+
+---
+
+[login_flowchat]: ../resource/宫斗登录流程图.png "宫斗登录流程图"
+[server_framework]: ../resource/宫斗服务器架构图.png "宫斗服务器架构图"
