@@ -195,6 +195,41 @@ bool HandleGamePacket(stPacketHead *pHead,int iSize) {
 
 ```
 
+## 宫斗合服 by_actor
+
+1. 清理每个服 过期数据
+2. Tbl_org 直接合
+3. Tbl_OrgMember 直接合
+4. Tbl_Prince 皇子 直接合
+5. Tbl_office 直接合
+6. Tbl_Account 每个账号 在 每个 Actor 都有一条记录
+    - 登录/登出 时间不同 这个要看看 结合什么功能发奖 再决定怎么取这个数
+    - 登录IP 有可能不同 这个应该随便合没影响
+    - 总在线时间不同 当天在线时间 要看看 这个时间结合什么功能发奖 再决定怎么取这个数
+7. Tbl_Player 直接合 但是要注意 合完以后一个账号对应多个角色 程序实现需要支持一下选角
+8. Tbl_PlayerBaseInfo 直接合
+9. Tbl_OrgSkill 直接合
+10. Tbl_Princess 妃子 直接合
+11. Tbl_Activity 清空
+12. Tbl_City 直接合
+13. Tbl_Card 直接合
+14. Tbl_Skill 科技 直接合
+15. Tbl_TopRank 清空
+16. Tbl_TimeSet 直接合
+17. Tbl_OrgLog 直接合
+18. Tbl_Item 直接合
+19. Tbl_Task 直接合
+20. Tbl_OrgApply 直接合
+21. Tbl_OrgGift 直接合
+22. Tbl_World 看代码 这个表没用到
+23. Tbl_Pve 清空
+24. Tbl_PlayerPurchase 清空
+25. Tbl_Player_Deleted 直接合
+26. Tbl_MailList_Deleted 没使用到这个表 废气
+27. Tbl_MaillList 需要从把B服的表插入到A服的表中 依赖IDENTITY 自增
+28. Tbl_LogPlayer 这个表没用到
+29. Tbl_Equip 这个表没用到
+
 ---
 
 [login_flowchat]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/宫斗登录流程图.png "宫斗登录流程图"
