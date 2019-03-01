@@ -198,39 +198,210 @@ bool HandleGamePacket(stPacketHead *pHead,int iSize) {
 ## 宫斗合服 by_actor
 
 1. 清理每个服 过期数据
-2. Tbl_org 直接合
-3. Tbl_OrgMember 直接合
-4. Tbl_Prince 皇子 直接合
-5. Tbl_office 直接合
-6. Tbl_Account 每个账号 在 每个 Actor 都有一条记录
+
+    > **注意事项**
+
+2. Tbl_Account 每个账号 在 每个 Actor 都有一条记录
     - 登录/登出 时间不同 这个要看看 结合什么功能发奖 再决定怎么取这个数
     - 登录IP 有可能不同 这个应该随便合没影响
     - 总在线时间不同 当天在线时间 要看看 这个时间结合什么功能发奖 再决定怎么取这个数
-7. Tbl_Player 直接合 但是要注意 合完以后一个账号对应多个角色 程序实现需要支持一下选角
+    - 没有 随便合
+3. Tbl_Player 直接合 但是要注意 合完以后一个账号对应多个角色 程序实现需要支持一下选角
+
+    > **直接合**
+
+4. Tbl_org 直接合
+5. Tbl_OrgMember 直接合
+6. Tbl_Prince 皇子 直接合
+7. Tbl_Officer 直接合
 8. Tbl_PlayerBaseInfo 直接合
 9. Tbl_OrgSkill 直接合
 10. Tbl_Princess 妃子 直接合
-11. Tbl_Activity 清空
-12. Tbl_City 直接合
-13. Tbl_Card 直接合
-14. Tbl_Skill 科技 直接合
-15. Tbl_TopRank 清空
-16. Tbl_TimeSet 直接合
-17. Tbl_OrgLog 直接合
-18. Tbl_Item 直接合
-19. Tbl_Task 直接合
-20. Tbl_OrgApply 直接合
-21. Tbl_OrgGift 直接合
-22. Tbl_World 看代码 这个表没用到
-23. Tbl_Pve 清空
-24. Tbl_PlayerPurchase 清空
-25. Tbl_Player_Deleted 直接合
-26. Tbl_MailList_Deleted 没使用到这个表 废气
-27. Tbl_MaillList 需要从把B服的表插入到A服的表中 依赖IDENTITY 自增
-28. Tbl_LogPlayer 这个表没用到
-29. Tbl_Equip 这个表没用到
+11. Tbl_City 直接合
+12. Tbl_Card 直接合
+13. Tbl_Skill 科技 直接合
+14. Tbl_TimeSet 直接合
+15. Tbl_OrgLog 直接合
+16. Tbl_Item 直接合
+17. Tbl_Task 直接合
+18. Tbl_OrgApply 直接合
+19. Tbl_OrgGift 直接合
+20. Tbl_Player_Deleted 直接合
+21. Tbl_Boss 直接合
+22. Tbl_BossRank 直接合
+23. Tbl_BossBattle 直接合 ID 是Tbl_Org 联盟ID
+
+    > **自增插入**
+
+24. Tbl_MaillList 需要从把B服的表插入到A服的表中 依赖IDENTITY 自增
+25. Tbl_Dinner 需要从把B服的表插入到A服的表中 依赖IDENTITY 自增
+26. Tbl_Dinner_Delete 需要从把B服的表插入到A服的表中 依赖IDENTITY 自增
+
+    > **清空**
+
+27. Tbl_Pve 清空
+28. Tbl_PlayerPurchase 清空
+29. Tbl_TopRank 清空
+30. Tbl_Activity 清空
+
+    > **这个表没用到**
+
+31. Tbl_Battle 这个表没用到
+32. DB_CONFIG 这个表没用到
+33. Tbl_Buff 这个表没用到
+34. Tbl_World 这个表没用到
+35. Tbl_MailList_Deleted 这个表没用到
+36. Tbl_LogPlayer 这个表没用到
+37. Tbl_Equip 这个表没用到
+
+```SQL
+INSERT into by_actor_2.dbo.Tbl_Org select * from by_actor_1.dbo.Tbl_Org
+INSERT into by_actor_2.dbo.Tbl_OrgMember select * from by_actor_1.dbo.Tbl_OrgMember
+INSERT into by_actor_2.dbo.Tbl_Prince select * from by_actor_1.dbo.Tbl_Prince
+INSERT into by_actor_2.dbo.Tbl_Officer select * from by_actor_1.dbo.Tbl_Officer
+
+INSERT into by_actor_2.dbo.Tbl_Player select * from by_actor_1.dbo.Tbl_Player
+INSERT into by_actor_2.dbo.Tbl_PlayerBaseInfo select * from by_actor_1.dbo.Tbl_PlayerBaseInfo
+INSERT into by_actor_2.dbo.Tbl_OrgSkill select * from by_actor_1.dbo.Tbl_OrgSkill
+INSERT into by_actor_2.dbo.Tbl_Princess select * from by_actor_1.dbo.Tbl_Princess
+INSERT into by_actor_2.dbo.Tbl_City select * from by_actor_1.dbo.Tbl_City
+INSERT into by_actor_2.dbo.Tbl_Card select * from by_actor_1.dbo.Tbl_Card
+INSERT into by_actor_2.dbo.Tbl_Skill select * from by_actor_1.dbo.Tbl_Skill
+INSERT into by_actor_2.dbo.Tbl_TimeSet select * from by_actor_1.dbo.Tbl_TimeSet
+INSERT into by_actor_2.dbo.Tbl_OrgLog select * from by_actor_1.dbo.Tbl_OrgLog
+INSERT into by_actor_2.dbo.Tbl_Item select * from by_actor_1.dbo.Tbl_Item
+INSERT into by_actor_2.dbo.Tbl_Task select * from by_actor_1.dbo.Tbl_Task
+INSERT into by_actor_2.dbo.Tbl_OrgApply select * from by_actor_1.dbo.Tbl_OrgApply
+INSERT into by_actor_2.dbo.Tbl_OrgGift select * from by_actor_1.dbo.Tbl_OrgGift
+INSERT into by_actor_2.dbo.Tbl_Player_Deleted select * from by_actor_1.dbo.Tbl_Player_Deleted
+INSERT into by_actor_2.dbo.Tbl_Boss select * from by_actor_1.dbo.Tbl_Boss
+INSERT into by_actor_2.dbo.Tbl_BossRank select * from by_actor_1.dbo.Tbl_BossRank
+INSERT into by_actor_2.dbo.Tbl_BossBattle select * from by_actor_1.dbo.Tbl_BossBattle
+
+
+
+```
 
 ---
 
 [login_flowchat]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/宫斗登录流程图.png "宫斗登录流程图"
 [server_framework]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/宫斗服务器架构图.png "宫斗服务器架构图"
+
+```sql
+USE [by_actor]
+GO
+/****** Object:  StoredProcedure [dbo].[Sp_UpdateMailList]    Script Date: 2019/3/1 16:06:00 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Sp_UpdateMailList]
+@mailid			INT,
+@sender			INT,
+@sender_name	VARCHAR(32),
+@money			INT,
+@itemid0		INT,
+@itemid1		INT,
+@itemid2		INT,
+@itemid3		INT,
+@itemid4		INT,
+@itemid5		INT,
+@itemid6		INT,
+@itemid7		INT,
+@item_count0	SMALLINT,
+@item_count1	SMALLINT,
+@item_count2	SMALLINT,
+@item_count3	SMALLINT,
+@item_count4	SMALLINT,
+@item_count5	SMALLINT,
+@item_count6	SMALLINT,
+@item_count7	SMALLINT,
+@send_time		DATETIME,
+@recver			INT,
+@recver_name	VARCHAR(32),
+@isSystem		TINYINT,
+@title			VARCHAR(128),
+@Message		VARCHAR(255),
+@parameter	VARCHAR(255)
+AS
+BEGIN
+	SET NOCOUNT ON
+	DECLARE @ID INT, @COUNT INT
+	DECLARE @ERR INT
+	SET @ERR = 0	
+	
+	--检查收件人ID是否存在
+	IF @recver <> 0
+	BEGIN
+		SELECT @recver_name=PlayerName FROM Tbl_Player WHERE PlayerID=@recver
+		IF @@ROWCOUNT = 0
+			SET @ERR = 1	    --收件人ID不存在
+	END
+	ELSE
+	BEGIN
+		SELECT @recver=PlayerID FROM Tbl_Player WHERE PlayerName=@recver_name
+		IF @@ROWCOUNT = 0
+			SET @ERR = 2		--收件人名称不存在
+	END
+
+	IF @ERR = 0
+	BEGIN
+		IF @isSystem=0  --非系统邮件
+		BEGIN
+			IF @money<>0 OR @itemid0<>0		
+			BEGIN
+				SELECT @COUNT=COUNT(recver) FROM Tbl_MailList WHERE recver=@recver AND isSystem=0 AND ([money]<>0 OR itemid0<>0)
+				IF @COUNT >= 30
+					SET @ERR = 3		--带物品邮件数量超限
+			END
+			ELSE
+			BEGIN
+				SELECT @COUNT=COUNT(recver) FROM Tbl_MailList WHERE recver=@recver AND isSystem=0 AND [money]=0 AND itemid0=0
+				IF @COUNT >= 90
+					SET @ERR = 3		--文本邮件数量超限
+			END
+		END
+	END
+
+	IF @ERR = 0
+	BEGIN
+		IF EXISTS(SELECT 1 FROM Tbl_MailList WHERE id=@mailid)
+		BEGIN
+			UPDATE Tbl_MailList SET 
+				[money] = @money , 
+				item_count0 = @item_count0, 
+				item_count1 = @item_count1, 
+				item_count2 = @item_count2, 
+				item_count3 = @item_count3, 
+				item_count4 = @item_count4, 
+				item_count5 = @item_count5, 
+				item_count6 = @item_count6, 
+				item_count7 = @item_count7, 
+				title = @title ,
+				itemId0 = @itemid0,
+				itemId1 = @itemid1,
+				itemId2 = @itemid2,
+				itemId3 = @itemid3,
+				itemId4 = @itemid4,
+				itemId5 = @itemid5,
+				itemId6 = @itemid6,
+				itemId7 = @itemid7,
+				content	= @message,
+				parameter	= @parameter 
+			WHERE id = @mailid
+		END
+		ELSE
+		BEGIN
+			INSERT INTO Tbl_MailList (sender,sender_name,[money],itemId0,itemId1,itemId2,itemId3,itemId4,itemId5,itemId6,itemId7,
+				item_count0,item_count1,item_count2,item_count3,item_count4,item_count5,item_count6,item_count7,
+				send_time,recver,recver_name,isSystem,title,content,parameter)
+				VALUES(@Sender,@Sender_name,@money,@itemid0,@itemid1,@itemid2,@itemid3,@itemid4,@itemid5,@itemid6,@itemid7,
+				@item_count0,@item_count1,@item_count2,@item_count3,@item_count4,@item_count5,@item_count6,@item_count7,
+				@send_time,@recver,@recver_name,@isSystem,@title,@message,@parameter)
+			SET @mailid = @@IDENTITY
+		END		
+	END
+
+	SELECT @ERR, @mailid, @recver
+END
+```
