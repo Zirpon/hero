@@ -235,7 +235,7 @@ bool HandleGamePacket(stPacketHead *pHead,int iSize) {
 
 24. Tbl_MaillList 需要从把B服的表插入到A服的表中 依赖IDENTITY 自增
 25. Tbl_Dinner 需要从把B服的表插入到A服的表中 依赖IDENTITY 自增
-26. Tbl_Dinner_Delete 需要从把B服的表插入到A服的表中 依赖IDENTITY 自增
+26. Tbl_Dinner_Delete 没什么用 不合了
 
     > **清空**
 
@@ -255,30 +255,43 @@ bool HandleGamePacket(stPacketHead *pHead,int iSize) {
 37. Tbl_Equip 这个表没用到
 
 ```SQL
-INSERT into by_actor_2.dbo.Tbl_Org select * from by_actor_1.dbo.Tbl_Org
-INSERT into by_actor_2.dbo.Tbl_OrgMember select * from by_actor_1.dbo.Tbl_OrgMember
-INSERT into by_actor_2.dbo.Tbl_Prince select * from by_actor_1.dbo.Tbl_Prince
-INSERT into by_actor_2.dbo.Tbl_Officer select * from by_actor_1.dbo.Tbl_Officer
+DECLARE SRCDB_NAME VARCHAR(255);
+DECLARE DESTDB_NAME VARCHAR(255);
+SET SRCDB_NAME = 'by_actor_1';
+SET DESTDB_NAME = 'by_actor_2';
 
-INSERT into by_actor_2.dbo.Tbl_Player select * from by_actor_1.dbo.Tbl_Player
-INSERT into by_actor_2.dbo.Tbl_PlayerBaseInfo select * from by_actor_1.dbo.Tbl_PlayerBaseInfo
-INSERT into by_actor_2.dbo.Tbl_OrgSkill select * from by_actor_1.dbo.Tbl_OrgSkill
-INSERT into by_actor_2.dbo.Tbl_Princess select * from by_actor_1.dbo.Tbl_Princess
-INSERT into by_actor_2.dbo.Tbl_City select * from by_actor_1.dbo.Tbl_City
-INSERT into by_actor_2.dbo.Tbl_Card select * from by_actor_1.dbo.Tbl_Card
-INSERT into by_actor_2.dbo.Tbl_Skill select * from by_actor_1.dbo.Tbl_Skill
-INSERT into by_actor_2.dbo.Tbl_TimeSet select * from by_actor_1.dbo.Tbl_TimeSet
-INSERT into by_actor_2.dbo.Tbl_OrgLog select * from by_actor_1.dbo.Tbl_OrgLog
-INSERT into by_actor_2.dbo.Tbl_Item select * from by_actor_1.dbo.Tbl_Item
-INSERT into by_actor_2.dbo.Tbl_Task select * from by_actor_1.dbo.Tbl_Task
-INSERT into by_actor_2.dbo.Tbl_OrgApply select * from by_actor_1.dbo.Tbl_OrgApply
-INSERT into by_actor_2.dbo.Tbl_OrgGift select * from by_actor_1.dbo.Tbl_OrgGift
-INSERT into by_actor_2.dbo.Tbl_Player_Deleted select * from by_actor_1.dbo.Tbl_Player_Deleted
-INSERT into by_actor_2.dbo.Tbl_Boss select * from by_actor_1.dbo.Tbl_Boss
-INSERT into by_actor_2.dbo.Tbl_BossRank select * from by_actor_1.dbo.Tbl_BossRank
-INSERT into by_actor_2.dbo.Tbl_BossBattle select * from by_actor_1.dbo.Tbl_BossBattle
+use master
+exec sp_renamedb @dbname=@SRCDB_NAME, @newname='merge_src_db';
+exec sp_renamedb @dbname=@DESTDB_NAME, @newname='merge_dest_db';
 
+INSERT into merge_dest_db.dbo.Tbl_Org select * from merge_src_db.dbo.Tbl_Org
+INSERT into merge_dest_db.dbo.Tbl_OrgMember select * from merge_src_db.dbo.Tbl_OrgMember
+INSERT into merge_dest_db.dbo.Tbl_Prince select * from merge_src_db.dbo.Tbl_Prince
+INSERT into merge_dest_db.dbo.Tbl_Officer select * from merge_src_db.dbo.Tbl_Officer
 
+INSERT into merge_dest_db.dbo.Tbl_Player select * from merge_src_db.dbo.Tbl_Player
+INSERT into merge_dest_db.dbo.Tbl_PlayerBaseInfo select * from merge_src_db.dbo.Tbl_PlayerBaseInfo
+INSERT into merge_dest_db.dbo.Tbl_OrgSkill select * from merge_src_db.dbo.Tbl_OrgSkill
+INSERT into merge_dest_db.dbo.Tbl_Princess select * from merge_src_db.dbo.Tbl_Princess
+INSERT into merge_dest_db.dbo.Tbl_City select * from merge_src_db.dbo.Tbl_City
+INSERT into merge_dest_db.dbo.Tbl_Card select * from merge_src_db.dbo.Tbl_Card
+INSERT into merge_dest_db.dbo.Tbl_Skill select * from merge_src_db.dbo.Tbl_Skill
+INSERT into merge_dest_db.dbo.Tbl_TimeSet select * from merge_src_db.dbo.Tbl_TimeSet
+INSERT into merge_dest_db.dbo.Tbl_OrgLog select * from merge_src_db.dbo.Tbl_OrgLog
+INSERT into merge_dest_db.dbo.Tbl_Item select * from merge_src_db.dbo.Tbl_Item
+INSERT into merge_dest_db.dbo.Tbl_Task select * from merge_src_db.dbo.Tbl_Task
+INSERT into merge_dest_db.dbo.Tbl_OrgApply select * from merge_src_db.dbo.Tbl_OrgApply
+INSERT into merge_dest_db.dbo.Tbl_OrgGift select * from merge_src_db.dbo.Tbl_OrgGift
+INSERT into merge_dest_db.dbo.Tbl_Player_Deleted select * from merge_src_db.dbo.Tbl_Player_Deleted
+INSERT into merge_dest_db.dbo.Tbl_Boss select * from merge_src_db.dbo.Tbl_Boss
+INSERT into merge_dest_db.dbo.Tbl_BossRank select * from merge_src_db.dbo.Tbl_BossRank
+INSERT into merge_dest_db.dbo.Tbl_BossBattle select * from merge_src_db.dbo.Tbl_BossBattle
+
+Exec Sp_Merge_Dinner
+Exec Sp_Merge_MailList
+
+exec sp_renamedb @dbname='merge_src_db', @newname=@SRCDB_NAME;
+exec sp_renamedb @dbname='merge_dest_db', @newname=@DESTDB_NAME;
 
 ```
 
