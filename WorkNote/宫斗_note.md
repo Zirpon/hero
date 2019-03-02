@@ -295,6 +295,10 @@ exec sp_renamedb @dbname='merge_dest_db', @newname=@DESTDB_NAME;
 
 ```
 
+## 宫斗 动态执行命令 生成活动
+
+> redis -p 20116 --eval redis_load.lua
+
 ---
 
 [login_flowchat]: https://raw.githubusercontent.com/Zirpon/hero/master/resource/宫斗登录流程图.png "宫斗登录流程图"
