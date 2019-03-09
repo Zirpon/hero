@@ -180,6 +180,10 @@ class WorkQueen {
     }
 }
 
+// 初始化工作队列
+m_pWorkQueue = new CWorkQueue;
+m_pWorkQueue->Initialize(EventProcess,1,"EventProcess", 50);
+
 void HandleClientLogin() {
     T::getInstance()->getWorkQueue()->PostEvent(m_pSocket->GetClientId(),IP,sStrlen(IP,COMMON_STRING_LENGTH)+1,true,WQ_CONNECT);
 }
