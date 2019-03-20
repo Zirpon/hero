@@ -352,8 +352,8 @@ print(s, e) --> 7 9
   2. 其他情况下，函数调用`仅返回第一个值`（如果没有返回值为 nil）
 
     ```lua
-    function foo0 () end -- returns no results 
-    function foo1 () return 'a' end -- returns 1 result 
+    function foo0 () end -- returns no results
+    function foo1 () return 'a' end -- returns 1 result
     function foo2 () return 'a','b' end -- returns 2 results
 
     x,y = foo2(), 20 -- x='a', y=20
@@ -432,3 +432,45 @@ rename{old="temp.lua", new="temp1.lua"}
 ## 6. 再论函数
 
 note: ***Lua 中的函数是带有词法定界（lexical scoping）的第一类值（first-class values）。***
+
+**第一类值(first-class values)**指：***在 Lua 中函数和其他值（数值、字符串）一样，函数可以被存放在变量中，也可以存放在表中，可以作为函数的参数，还可以作为函数的返回值。***
+
+**词法定界(lexical scoping)**指：***被嵌套的函数可以访问他外部函数中的变量。这一特性给 Lua 提供了强大的编程能力。***
+
+Lua 中我们经常这样写：
+
+```lua
+function foo (x) return 2*x end
+```
+
+这实际上是利用 Lua 提供的“语法上的甜头”（***syntactic sugar***）的结果，下面是原本的函数：
+
+```lua
+-- why you try like that? because i dont't like sugar
+foo = function (x) return 2*x end
+```
+
+```lua
+-- 根据学生的成绩从高到低对学生进行排序， 这里的 names, grades 作用域是这个chunk的全局
+names = {"Peter", "Paul", "Mary"}
+grades = {Mary = 10, Paul = 7, Peter = 8}
+table.sort(names, function (n1, n2)
+return grades[n1] > grades[n2] -- compare the grades
+end)
+```
+
+以其他函数作为参数的函数在 Lua 中被称作`高级函数`，高级函数在 Lua 中并没有特权，只是 Lua 把函数当作`第一类函数`处理的一个简单的结果。
+
+```lua
+function sortbygrade (names, grades)
+    table.sort(names, function (n1, n2)
+        return grades[n1] > grades[n2] -- compare the grades
+    end)
+end
+```
+
+包含在 sortbygrade 函数内部的 sort 中的匿名函数可以访问 sortbygrade 的参数grades，
+在`匿名函数内部` grades 不是全局变量也不是局部变量，我们称作`外部的局部变量`（external local variable）或者 `upvalue`。
+
+技术上来讲，`闭包`指值而不是指函数，函数仅仅是闭包的一个`原型声明`；
+闭包的声明周期?
