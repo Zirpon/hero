@@ -1,5 +1,9 @@
 # lua 5.0 Note
 
+---
+
+> 语言
+
 ## 1. Begin
 
 ### 1.1 chunk
@@ -473,4 +477,647 @@ end
 在`匿名函数内部` grades 不是全局变量也不是局部变量，我们称作`外部的局部变量`（external local variable）或者 `upvalue`。
 
 技术上来讲，`闭包`指值而不是指函数，函数仅仅是闭包的一个`原型声明`；
-闭包的声明周期?
+> 闭包的声明周期?
+
+简单的说`闭包` 是 ***一个函数加上它可以正确访问的 upvalues。***
+
+```lua
+Lib = {}
+Lib.foo = function (x,y) return x + y end
+Lib.goo = function (x,y) return x - y end
+--------------
+Lib = {
+    foo = function (x,y) return x + y end,
+    goo = function (x,y) return x - y end,
+}
+--------------
+Lib = {}
+function Lib.foo (x,y)
+    return x + y
+end
+function Lib.goo (x,y)
+    return x - y
+end
+```
+
+Lua 把 `chunk` 当作`函数`处理，在 chunk 内可以声明`局部函数`（***仅仅在 chunk 内可见***），词法定界保证了包内的`其他函数`**可以调用**此函数。
+
+```lua
+-- error usage
+local fact = function (n)
+    if n == 0 then
+        return 1
+    else
+        return n*fact(n-1) -- buggy
+    end
+end
+```
+
+上面这种方式导致 Lua 编译时遇到 fact(n-1)并*不知道他是局部函数* `fact`，Lua 会去查找是否有这样的*全局函数* `fact`。
+为了解决这个问题我们必须在*定义函数以前* 先**声明**:
+
+```lua
+local fact
+fact = function (n)
+    if n == 0 then
+        return 1
+    else
+        return n*fact(n-1)
+    end
+end
+```
+
+note:*但是 Lua 扩展了他的语法使得可以在直接递归函数定义时使用两种方式都可以。*
+note:*在定义`非`直接递归局部函数时要**先声明**然后定义才可以*
+
+### 6.3 尾调用(proper tail calls)
+
+```lua
+function f(x)
+    return g(x)
+end
+```
+
+*这种情况下当被调用函数 g 结束时程序**不需要返回**到`调用者 f`；*
+*所以**尾调用之后**程序不需要在栈中保留关于**调用者的任何信息**。*
+*一些编译器比如 **Lua 解释器**利用这种特性在处理尾调用时**不使用额外的栈**，我们称这种语言**支持**`正确的尾调用`。*
+
+note:*由于尾调用不需要使用栈空间，那么尾调用**递归的层次**可以无限制的。例如下面调用不论 n 为何值**不会导致栈溢出**。*
+
+```lua
+function foo (n)
+    if n > 0 then return foo(n - 1) end
+end
+
+-- 非尾调用
+return g(x) + 1 -- must do the addition
+return x or g(x) -- must adjust to 1 result
+return (g(x)) -- must adjust to 1 result
+```
+
+可以将尾调用理解成一种 goto，在**状态机的编程**领域尾调用是非常有用的。
+状态机的应用要求函数记住每一个状态，改变状态只需要 goto(or call)一个特定的函数。
+
+传统模式的编译器对于尾调用的处理方式就像处理其他普通函数调用一样，总会在调用时创建一个新的栈帧（stack frame）并将其推入调用栈顶部，用于表示该次函数调用。
+
+当一个函数调用发生时，计算机必须 “记住” 调用函数的位置 —— 返回位置，才可以在调用结束时带着返回值回到该位置，返回位置一般存在调用栈上。在尾调用这种特殊情形中，计算机理论上可以*不需要记住尾调用的位置*而*从被调用的函数直接**带着返回值**返回调用函数的返回位置*（相当于直接连续返回两次）。
+尾调用消除即是在不改变当前调用栈（也不添加新的返回位置）的情况下跳到新函数的一种优化（完全不改变调用栈是不可能的，还是需要校正调用栈上形式参数与局部变量的信息。）
+
+由于当前函数帧上包含局部变量等等大部分的东西都不需要了，当前的*函数帧经过适当的更动*以后可以*直接当作被尾调用的函数的帧使用*，然后程序即可以跳到被尾调用的函数。产生这种函数帧更动代码与 “jump”（而不是一般常规函数调用的代码）的过程称作**尾调用消除(Tail Call Elimination)**或**尾调用优化(Tail Call Optimization, TCO)**。尾调用优化让位于尾位置的函数调用跟 goto 语句性能一样高，也因此使得高效的结构编程成为现实。
+
+然而，对于 **C++** 等语言来说，在函数最后 return g(x); 并不一定是尾递归——在返回之前很可能涉及到**对象的析构函数**，使得 g(x) 不是最后执行的那个。这可以通过返回值优化来解决。
+
+```lua
+function foo(data1, data2)
+   a(data1)
+   return b(data2)
+
+
+汇编代码:
+```asm
+foo:
+  mov  reg,[sp+data1] ; 透过栈指针（sp）取得 data1 并放到暂用暂存器。
+  push reg            ; 将 data1 放到栈上以便 a 使用。
+  call a              ; a 使用 data1。
+  pop                 ; 把 data1 從栈上拿掉。
+  mov  reg,[sp+data2] ; 透过栈指針（sp）取得 data2 並放到暂用暂存器。
+  push reg            ; 将 data2 放到栈上以便 b 使用。
+  call b              ; b 使用 data2。
+  pop                 ; 把 data2 從栈上拿掉。
+  ret
+```
+
+优化后汇编代码:
+
+```asm
+foo:
+  mov  reg,[sp+data1] ; 透过栈指针（sp）取得 data1 并放到暂用暂存器。
+  push reg            ; 将 data1 放到栈上以便 a 使用。
+  call a              ; a 使用 data1。
+  pop                 ; 把 data1 從栈上拿掉。
+  mov  reg,[sp+data2] ; 透过栈指針（sp）取得 data2 並放到暂用暂存器。  
+  mov  [sp+data1],reg ; 把 data2 放到 b 预期的位置。
+  jmp  b              ; b 使用 data2 並返回到调用 foo 的函数。
+```
+
+## 7. 迭代器 泛型for
+
+创建一个`闭包`必须要创建其外部局部变量。
+所以一个典型的闭包的结构包含两个函数：一个是`闭包`自己；另一个是工厂（`创建闭包的函数`）。
+
+```lua
+function list_iter (t)
+    local i = 0
+    local n = table.getn(t)
+    return function ()
+        i = i + 1
+        if i <= n then return t[i] end
+    end
+end
+
+-- usage:
+t = {10, 20, 30}
+iter = list_iter(t) -- creates the iterator
+while true do
+    local element = iter() -- calls the iterator
+    if element == nil then break end
+    print(element)
+end
+
+-- 泛型 for
+t = {10, 20, 30}
+for element in list_iter(t) do
+    print(element)
+end
+```
+
+note:*这个例子中 list_iter 是一个工厂，每次调用他都会创建一个新的闭包（迭代器本身）*
+
+```lua
+-- 迭代器
+function allwords()
+    local line = io.read() -- current line
+    local pos = 1 -- current position in the line
+    return function () -- iterator function
+        while line do -- repeat while there are lines
+            local s, e = string.find(line, "%w+", pos)
+            if s then -- found a word
+                pos = e + 1 -- next position is after this word
+                return string.sub(line, s, e) -- return the word
+            else
+                line = io.read() -- word not found; try next line
+                pos = 1 -- restart from first position
+            end
+        end
+        return nil -- no more lines: end of traversal
+    end
+end
+
+-- usage:
+for word in allwords() do
+    print(word)
+end
+```
+
+### 7.2 泛型 for 的语义
+
+一般式:
+
+```lua
+for var_1, ..., var_n in explist do block end
+-- ==>
+
+do
+    local _f, _s, _var = explist
+    while true do
+        local var_1, ... , var_n = _f(_s, _var)
+        _var = var_1
+        if _var == nil then break end
+        block
+    end
+end
+```
+
+### 7.3 无状态的迭代器
+
+note:*迭代的状态包括被遍历的表（循环过程中不会改变的`状态常量`）和当前的索引下标（`控制变量`），*
+
+```lua
+function iter (a, i)
+    i = i + 1
+    local v = a[i]
+    if v then
+        return i, v
+    end
+end
+
+function ipairs (a)
+    return iter, a, 0
+end
+```
+
+note:*当 Lua 调用 ipairs(a)开始循环时，他获取三个值:迭代函数 iter，状态常量 a 和控制变量初始值 0；然后 Lua 调用 iter(a,0)返回 1,a[1]（除非 a[1]=nil）；直到**第一个**非 nil 元素*
+
+```lua
+local n
+-- n = nil 全部
+-- n = 1 打印从2 开始
+-- n = 0 出错
+dd={1,3,3,3,}
+for k, v in next, dd, n do
+    print(k,v)
+end
+```
+
+### 7.3 多状态的迭代器
+
+## 8. 编译 运行 调试
+
+note: *解释型语言的特征不在于他们是否被编译，而是`编译器`是`语言运行时`的一部分*
+
+loadfile:*编译代码成中间码并且返回编译后的 chunk 作为一个函数，而不执行代码；*
+
+note:*在发生错误的情况下，loadfile 返回 nil 和错误信息，这样我们就可以自定义错误处理*
+
+```lua
+f = loadstring("i = i + 1")
+```
+
+note:*f 将是一个函数，调用时执行 i=i+1*
+
+Lua 把每一个 chunk 都作为一个`匿名函数`处理。
+例如：chunk "a = 1"，
+`loadstring` 返回与其等价的 `function () a = 1 end`与其他函数一样，
+chunks 可以定义局部变量也可以返回值：`f = loadstring("local a = 10; return a + 20")`
+
+note:*loadfile 和 loadstring 都不会抛出错误，如果发生错误他们将返回 nil 加上错误信息：*
+note:*Lua 中的`函数定义`是发生在`运行时的赋值`而不是发生在编译时。*
+
+如果你想快捷的调用 dostring（比如加载并运行），可以这样
+`loadstring(s)()`
+
+如果加载的内容存在`语法错误`的话，loadstring 返回 nil 和错误信息（attempt to call a nil value）；为了返回更清楚的错误信息可以使用 assert：
+`assert(loadstring(s))()`
+
+note:*每次调用 loadstring 都会重新编译,loadstring 编译的时候不关心词法范围*
+
+```lua
+local i = 0 
+f = loadstring("i = i + 1")
+g = function () i = i + 1 end
+```
+
+note:*这个例子中，和想象的一样 `g` 使用**局部变量** i，然而 `f` 使用**全局变量** i；`loadstring` 总是在**全局环境**中**编译**他的串。*
+
+note:*loadstring 期望一个 chunk，即语句。如果想要加载`表达式`，需要在表达式前加 `return`，那样将返回表达式的值。*
+
+## 8.1 require
+
+- *会搜索目录加载文件*
+- *会判断是否文件已经加载避免重复加载同一文件*
+- *?;?.lua;c:\windows\?;/usr/local/lua/?/?.lua*
+- *require 和 dofile 完成同样的功能*
+
+```lua
+require lili
+--[[
+lili
+lili.lua
+c:\windows\lili
+/usr/local/lua/lili/lili.lua
+]]
+```
+
+note:*表中保留加载的文件的虚名，而不是实文件名。所以如果你使用不同的虚文件名 require同一个文件两次，将会加载两次该文件。比如 require "foo"和 require "foo.lua"，将会加载 foo.lua 两次,全局变量`_LOADED` 访问文件名列表, `_REQUIREDNAME`*
+
+### 8.2 C Packages
+
+note:*动态连接库不是 ANSI C 的一部分，也就是说在标准 C 中实现动态连接是很困难的。*
+
+```lua
+local path = "/usr/local/lua/lib/libluasocket.so"
+-- or path = "C:\\windows\\luasocket.dll" 
+local f = assert(loadlib(path, "luaopen_socket"))
+f() -- actually open the library
+```
+
+### 8.3 错误
+
+```lua
+print "enter a number:"
+n = io.read("*number")
+if not n then error("invalid input") end
+```
+
+### 8.4 异常 和 错误处理 pcall
+
+### 8.5错误信息 和 回跟踪 xpcall
+
+```lua
+error("string expected", 2)
+print(debug.traceback())
+```
+
+## 9.0 协同程序
+
+协同程序（coroutine）*与多线程情况下的线程比较类似：有自己的堆栈，自己的局部变量，有自己的指令指针，但是和其他协同程序共享全局变量等很多信息。*
+
+线程和协同程序的主要不同在于：在多处理器情况下，从概念上来讲多线程程序同时运行多个线程；而协同程序是通过协作来完成，在**任一指定时刻只有一个协同程序在运行**，并且这个正在运行的协同程序只有在明确的被要求挂起的时候才会被挂起。
+
+```lua
+co = coroutine.create(function () print("hi") end)
+print(co) --> thread: 0x8071d98
+```
+
+note:*协同有三个状态：挂起态、运行态、停止态.当我们创建一个协同程序时他开始的状态为挂起态，也就是说我们创建协同程序的时候不会自动运行，*
+
+```lua
+print(coroutine.status(co)) --> suspended
+coroutine.resume(co)
+print(coroutine.status(co)) --> dead
+
+co = coroutine.create(function ()
+    for i=1,10 do
+        print("co", i)
+        coroutine.yield()
+    end
+end)
+
+-- 协同程序处于终止状态 激活他，resume 将返回 false 和错误信息。
+print(coroutine.resume(co)) --> false cannot resume dead coroutine
+```
+
+note:*resume 运行在保护模式下，因此如果协同内部存在错误 Lua 并不会抛出错误而是将错误返回给 resume 函数。*
+
+```lua
+-- yield 返回的额外的参数也将会传递给 resume。
+co = coroutine.create (function ()
+    print("co", coroutine.yield())
+end)
+coroutine.resume(co)
+coroutine.resume(co, 4, 5) --> co 4 5
+```
+
+- resume 把额外的参数传递给协同的主程序。
+- resume 返回除了 true 以外的其他部分将作为参数传递给相应的 yield, yield 返回的额外的参数也将会传递给 resume。
+- 当协同代码结束时主函数返回的值都会传给相应的 resume
+
+对称协同:*由执行到挂起之间状态转换的函数是相同的。*
+不对称协同(半协同):*挂起一个正在执行的协同的函数与使一 个被挂起的协同再次执行的函数是不同的*
+
+### 9.2 过滤器
+
+过滤器:*指在生产者与消费者之间，可以对数据 进行某些转换处理。过滤器在同一时间既是生产者又是消费者，他请求生产者生产值并 且转换格式后传给消费者*
+
+example:
+
+```lua
+function receive (prod)
+local status, value = coroutine.resume(prod)
+   return value
+end
+
+function send (x)
+   coroutine.yield(x)
+end
+
+function producer ()
+   return coroutine.create(function ()
+        while true do
+            local x = io.read() -- produce new value
+            send(x)
+        end
+    end)
+end
+
+function filter (prod)
+   return coroutine.create(function ()
+       local line = 1
+        while true do
+            local x = receive(prod) -- get new value
+            x = string.format("%5d %s", line, x)
+            send(x) -- send it to consumer
+            line = line + 1
+        end
+    end)
+end
+
+function consumer (prod)
+    while true do
+        local x = receive(prod) -- get new value
+        io.write(x, "\n") -- consume new value
+    end
+end
+
+consumer(filter(producer()))
+```
+
+### 9.3 迭代器
+
+origin:
+
+```lua
+function permgen (a, n)
+    if n == 0 then
+        printResult(a)
+    else
+        for i=1,n do
+            -- put i-th element as the last one
+            a[n], a[i] = a[i], a[n]
+            -- generate all permutations of the other elements
+            permgen(a, n - 1)
+            -- restore i-th element
+            a[n], a[i] = a[i], a[n]
+        end
+    end
+end
+
+function printResult (a)
+   for i,v in ipairs(a) do
+       io.write(v, " ")
+   end
+   io.write("\n")
+end
+
+permgen ({1,2,3,4}, 4)
+```
+
+example:
+
+```lua
+function permgen (a, n)
+    if n == 0 then
+       coroutine.yield(a)
+    else
+        for i=1,n do
+            -- put i-th element as the last one
+            a[n], a[i] = a[i], a[n]
+            -- generate all permutations of the other elements
+            permgen(a, n - 1)
+            -- restore i-th element
+            a[n], a[i] = a[i], a[n]
+        end
+    end
+end
+
+function perm (a)
+    local n = table.getn(a)
+    local co = coroutine.create(function () permgen(a, n) end)
+    return function () -- iterator
+        local code, res = coroutine.resume(co)
+        return res
+    end
+end
+
+function printResult (a)
+    for i,v in ipairs(a) do
+        io.write(v, " ")
+    end
+    io.write("\n")
+end
+
+for p in perm{"a", "b", "c"} do
+   printResult(p)
+end
+```
+
+coroutine.wrap:*wrap 创建一个协同程序;不同的是 wrap 不返回协 同本身，而是返回一个函数，当这个函数被调用时将 resume 协同*
+
+```lua
+function perm (a)
+   local n = table.getn(a)
+   return coroutine.wrap(function () permgen(a, n) end)
+end
+```
+
+### 9.4 非抢占式多线程
+
+note:*协同是非抢占式的。 当一个协同正在运行时，不能在外部终止他。只能通过显示的调用 yield 挂起他的执行。*
+
+```lua
+协同是非抢占式的。 当一个协同正在运行时，不能在外部终止他。只能通过显示的调用 yield 挂起他的执行。
+```
+
+---
+> table & object
+
+## 11. 数据结构
+
+### 11.1 数组
+
+### 11.2 阵 多维数组
+
+稀疏矩阵:*指矩阵的大部分元素都为空或者 0 的矩阵。*
+
+### 11.3 链表
+
+### 11.4 队列 双端队列
+
+note:*Lua 的 table 库提供的 insert 和 remove 操作来实现队列，但这种方式 实现的队列针对**大数据量**时效率太低*
+
+note:*有效的方式是使用两个索引下标，一个表示第一个元素，另一个表示最后一个元素。*
+
+### 11.5 集合 包
+
+### 11.6 字符串缓冲
+
+```lua
+-- WARNING: bad code ahead!!
+local buff = ""
+for line in io.lines() do
+   buff = buff .. line .. "\n"
+end
+```
+
+假定在 loop 中间，buff 已经是一个 50KB 的字符串， 每一行的大小为 20bytes，
+当 Lua 执行 `buff..line.."\n"`时，她创建了一个新的字符串大小为 50,020 bytes，并且从 buff 中将 50KB 的字符串拷贝到新串中。
+老的字符串变成了垃圾数据，两轮循环之后，将有两个老串包含超过 100KB 的垃圾 数据。这个时候 Lua 会做出正确的决定，进行他的垃圾收集并释放 100KB 的内存。问题 在于每两次循环 Lua 就要进行一次垃圾收集，读取整个文件需要进行 200 次垃圾收集。 并且它的内存使用是整个文件大小的三倍。
+
+note:*其它的采用垃圾收集算法的并且字符串不可变的语言 也都存在这个问题。Java 专门提供 StringBuffer 来改善这种情况。*
+
+```lua
+function newStack ()
+   return {""}   -- starts with an empty string
+end
+
+function addString (stack, s)
+    table.insert(stack,s) --push's'intothethestack for i=table.getn(stack)-1, 1, -1 do
+    if string.len(stack[i]) > string.len(stack[i+1]) then
+        break
+    end
+
+    stack[i] = stack[i] .. stack[i+1]
+    stack[i+1] = nil
+    end
+end
+
+local s = newStack()
+for line in io.lines() do
+   addString(s, line .. "\n")
+end
+s = toString(s)
+
+-- 或者
+local t = {}
+for line in io.lines() do
+   table.insert(t, line)
+end
+s = table.concat(t, "\n") .. "\n"
+```
+
+## 12. 数据文件与持久化
+
+> string.format("%q", o)
+
+## 13. metatables metamethods
+
+```lua
+t1 = {}
+setmetatable(t, t1)
+assert(getmetatable(t) == t1)
+```
+
+note:*一组相关的表可以共享一个 metatable (描述他们共同的行为)。一个表也可以是**自身**的 metatable(描述其私有行为)。*
+
+### 13.1  算术运算的 metamethods
+
+```lua
+Set = {}
+Set.mt = {} -- metatable for sets
+
+function Set.new (t)
+   local set = {}
+    setmetatable(set, Set.mt)
+   for _, l in ipairs(t) do set[l] = true end
+   return set
+end
+function Set.union (a,b)
+    if getmetatable(a) ~= Set.mt or getmetatable(b) ~= Set.mt then
+        error("attempt to `add' a set with a non-set value", 2)
+    end
+   local res = Set.new{}
+   for k in pairs(a) do res[k] = true end
+   for k in pairs(b) do res[k] = true end
+   return res
+end
+function Set.intersection (a,b)
+   local res = Set.new{}
+   for k in pairs(a) do
+res[k] = b[k]
+end
+   return res
+end
+
+function Set.tostring (set)
+   local s = "{"
+   local sep = ""
+   for e in pairs(set) do
+s = s .. sep .. e
+sep = ", " end
+   return s .. "}"
+end
+function Set.print (s)
+   print(Set.tostring(s))
+end
+
+s1 = Set.new{10, 20, 30, 50}
+s2 = Set.new{30, 1}
+print(getmetatable(s1))     --> table: 00672B60
+print(getmetatable(s2))     --> table: 00672B60
+
+Set.mt.__add = Set.union
+
+s3 = s1 + s2
+Set.print(s3) --> {1, 10, 20, 30, 50}
+
+Set.mt.__mul = Set.intersection
+Set.print((s1 + s2)*s1)     --> {10, 20, 30, 50}
+
+```
+
+note:*除了__add,__mul, 还有__sub(减),__div(除),__unm(负),__pow(幂)，我们也可以定义__concat 定义连接行为。*
+
+如果两个操作数有不同的 metatable, Lua 选择 metamethod 的原则:
+
+- 如果第一个参数存在带有__add 域的 metatable，Lua 使用它作为 metamethod，和第二个参数无关;
+- 否则第二个参数存在带有__add 域的 metatable，Lua 使用它作为 metamethod 否则报 错。
