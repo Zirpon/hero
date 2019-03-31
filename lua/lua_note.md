@@ -1120,4 +1120,144 @@ note:*除了__add,__mul, 还有__sub(减),__div(除),__unm(负),__pow(幂)，我
 如果两个操作数有不同的 metatable, Lua 选择 metamethod 的原则:
 
 - 如果第一个参数存在带有__add 域的 metatable，Lua 使用它作为 metamethod，和第二个参数无关;
-- 否则第二个参数存在带有__add 域的 metatable，Lua 使用它作为 metamethod 否则报 错。
+- 否则第二个参数存在带有__add 域的 metatable，Lua 使用它作为 metamethod 否则报错。
+
+### 13.2 关系运算的 metamethods
+
+note:*__eq（等于），__lt（小于） ，和__le（小于等于)*
+
+note:*`当我们遇到偏序（partial order）情况，也就是说，并不是所有的元素都可以正确的被排序情况。例如，在大多数机器上浮点数不能被排序，因为他的值不是一个数字（Not a Number 即 NaN）`*
+
+note:*根据 IEEE 754 的标准，NaN 表示一个未定义的值，比如 0/0 的结果。该标准指出任何涉及到 NaN 比较的结果都应为 false。也就是说，NaN <= x 总是 false，x < NaN 也总是 false。这样一来，在这种情况下 a <= b 转换为 not (b < a)就不再正确了。*
+
+note:*<=代表集合的包含：a <= b 表示集合 a 是集合 b 的子集。这种意义下，可能 a <= b 和 b < a 都是 false；*
+
+note:*关系元算的 metamethods 不支持混合类型运算*
+
+note:*试图比较一个字符串和一个数字，Lua 将抛出错误.相似的，如果你试图比较两个带有不同 metamethods 的对象，Lua 也将抛出错误。*
+
+note:*但相等比较从来不会抛出错误，如果两个对象有不同的 metamethod，比较的结果为false，甚至可能不会调用 metamethod.*
+
+note:*仅当两个有共同的 metamethod 的对象进行相等比较的时候，Lua 才会调用对应的 metamethod。*
+
+### 13.3 库定义的 metamethods
+
+note:*`print` 函数总是调用 tostring 来格式化它的输出, tostring 会首先检查对象是否存在一个带有`__tostring`域的 metatable。*
+
+假定你想保护你的集合使其使用者既看不到也不能修改 metatables。
+如果你对 metatable 设置了__metatable 的值， getmetatable 将返回这个域的值，而调用 setmetatable将会出错：
+
+> Set.mt.__metatable = "not your business"
+
+### 13.4 表相关 metamethods
+
+#### 13.4.1 The __index Metamethod
+
+note:*当我们访问一个表的不存在的域，这种访问触发 lua 解释器去查找__index metamethod*
+note:*__index metamethod 不需要非是一个函数，他也可以是一个表。*
+
+- 它是一个函数的时候，Lua 将 table 和缺少的域作为参数调用这个函数；
+- 他是一个表的时候，Lua 将在这个表中看是否有缺少的域。
+
+#### 13.4.2 The __newindex Metamethod
+
+note:*当你给表的一个缺少的域赋值，解释器就会查找__newindex metamethod,如果存在则调用这个函数而不进行赋值操作。*
+
+调用rawset(t,k,v)不掉用任何 metamethod 对表 t 的 k 域赋值为 v。
+
+#### 13.4.3 有默认值的表
+
+#### 13.4.4 监控表
+
+单表监控
+
+```lua
+t = {} -- original table (created somewhere)
+-- keep a private access to original table
+local _t = t
+-- create proxy
+t = {}
+-- create metatable
+local mt = {
+__index = function (t,k)
+print("*access to element " .. tostring(k))
+return _t[k] -- access the original table
+end,
+__newindex = function (t,k,v)
+print("*update of element " .. tostring(k) ..
+" to " .. tostring(v))
+_t[k] = v -- update original table
+end
+}
+setmetatable(t, mt)
+```
+
+note:*注意：不幸的是，这个设计不允许我们遍历表。*
+
+多表监控
+
+```lua
+-- create private index
+local index = {}
+-- create metatable
+local mt = {
+    __index = function (t,k)
+        print("*access to element " .. tostring(k))
+        return t[index][k] -- access the original table
+    end
+    __newindex = function (t,k,v)
+        print("*update of element " .. tostring(k) .. " to ".. tostring(v))
+        t[index][k] = v -- update original table
+    end
+}
+function track (t)
+    local proxy = {}
+    proxy[index] = t
+    setmetatable(proxy, mt)
+    return proxy
+end
+```
+
+#### 13.4.5 只读表
+
+```lua
+function readOnly (t)
+    local proxy = {}
+    local mt = { -- create metatable
+        __index = t,
+        __newindex = function (t,k,v)
+            error("attempt to update a read-only table", 2)
+        end
+    }
+    setmetatable(proxy, mt)
+    return proxy
+end
+
+days = readOnly{"Sunday", "Monday", "Tuesday", "Wednesday","Thursday", "Friday", "Saturday"}
+```
+
+## 14.环境
+
+### 14.1 使用动态名字访问全局变量
+
+```lua
+function getfield (f)
+    local v = _G -- start with the table of globals
+    for w in string.gfind(f, "[%w_]+") do
+        v = v[w]
+    end
+    return v
+end
+
+function setfield (f, v)
+    local t = _G -- start with the table of globals
+    for w, d in string.gfind(f, "([%w_]+)(.?)") do
+        if d == "." then -- not last field?
+            t[w] = t[w] or {} -- create table if absent
+            t = t[w] -- get the table
+        else -- last field
+            t[w] = v -- do the assignment
+        end
+    end
+end
+```
