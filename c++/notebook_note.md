@@ -94,6 +94,7 @@ void BiTree<DataType>::InOrder(BiNode<DataType>* bt) {
 
 - 除以7 余数
 - n = n & (n-1) 二进制 1 的个数
+- 字符串去掉空格
 
 ## 引用 与 指针
 
@@ -150,3 +151,5 @@ void BiSortTree::DeleteBST(BiNode<int>* p, BiNode<int>* f) {
 分配排序
 
 - 桶排 $O(N+M)$
+
+### 链表翻转
