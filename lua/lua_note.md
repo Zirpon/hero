@@ -121,7 +121,7 @@ io.write(page)
 ```lua
 print("10" + 1) --> 11
 print("10 + 1") --> 10 + 1
-print("-5.3e - 10" * "2") --> -1.06e-09 
+print("-5.3e - 10" * "2") --> -1.06e-09
 print("hello" + 1) -- ERROR (cannot convert "hello")
 ```
 
@@ -344,7 +344,7 @@ o:foo(x) -- > o.foo(o, x)
 string.find，其返回匹配串`“开始和结束的下标”`（如果不存在匹配串返回 `nil`）。
 
 ```lua
-s, e = string.find("hello Lua users", "Lua") 
+s, e = string.find("hello Lua users", "Lua")
 print(s, e) --> 7 9
 ```
 
@@ -742,7 +742,7 @@ note:*Lua 中的`函数定义`是发生在`运行时的赋值`而不是发生在
 note:*每次调用 loadstring 都会重新编译,loadstring 编译的时候不关心词法范围*
 
 ```lua
-local i = 0 
+local i = 0
 f = loadstring("i = i + 1")
 g = function () i = i + 1 end
 ```
@@ -776,7 +776,7 @@ note:*动态连接库不是 ANSI C 的一部分，也就是说在标准 C 中实
 
 ```lua
 local path = "/usr/local/lua/lib/libluasocket.so"
--- or path = "C:\\windows\\luasocket.dll" 
+-- or path = "C:\\windows\\luasocket.dll"
 local f = assert(loadlib(path, "luaopen_socket"))
 f() -- actually open the library
 ```
@@ -1260,4 +1260,164 @@ function setfield (f, v)
         end
     end
 end
+```
+
+### 14.2 声明全局变量
+
+```lua
+local declaredNames = {}
+
+function declare (name, initval)
+    rawset(_G, name, initval)
+    declaredNames[name] = true
+end
+
+setmetatable(_G, {
+    __newindex = function (t, n, v)
+        if not declaredNames[n] then
+            print("attempt to write to undeclared var. "..n, 2)
+        else
+            rawset(t, n, v) -- do the actual set
+        end
+    end,
+    __index = function (_, n)
+        if not declaredNames[n] then
+            print("attempt to read undeclared var. "..n, 2)
+        else
+            return nil
+        end
+    end,
+})
+```
+
+### 14.3 非全局的环境
+
+note:*当你安装一个 metatable 去控制全局访问时，你的整个程序都必须遵循同一个指导方针。如果你想使用标准库，标准库中可能使用到没有声明的全局变量，你将碰到坏运。*
+
+Setfenv:*接受函数和新的环境作为参数。除了使用函数本身，还可以指定一个数字表示栈顶的活动函数。数字 1 代表当前函数，数字 2 代表调用当前函数的函数*
+
+```lua
+a = 1 -- create a global variable
+-- change current environment to a new empty table
+setfenv(1, {})
+print(a)
+```
+
+必须在单独的 chunk 内运行这段代码，如果你在交互模式逐行运行他，每一行都是一个不同的函数，调用 setfenv 只会影响他自己的那一行
+
+封装: populate
+
+```lua
+a = 1 -- create a global variable
+-- change current environment
+setfenv(1, {_G = _G})
+_G.print(a) --> nil
+_G.print(_G.a) --> 1
+```
+
+继承封装
+
+```lua
+a = 1 -- create a global variable
+-- change current environment
+setfenv(1, {_G = _G})
+_G.print(a) --> nil
+_G.print(_G.a) --> 1
+```
+
+note:*当你创建一个新的函数时，他从创建他的函数继承了环境变量*
+note:*如果一个chunk 改变了他自己的环境，这个 chunk 所有在改变之后定义的函数都共享相同的环境，都会受到影响。这对创建**命名空间**是非常有用的机制*
+
+## 15 package
+
+note:*大多数语言中，packages 不是**第一类值(first-class values)**（也就是说，他们不能存储在变量里，不能作为函数参数。。。 ）*
+
+- 对每一个函数定义都必须显示的在前面加上包的名称。
+- 同一包内的函数`相互调用`必须在被调用函数前**指定包名**。
+
+缺点:
+
+- *修改函数的状态(公有变成私有或者私有变成公有)我们必须修改函数得**调用方式**。*
+- *访问同一个package 内的其他公有的实体写法冗余，必须加上前缀 P.。*
+
+```lua
+local function checkComplex (c)
+    if not ((type(c) == "table") and tonumber(c.r) and tonumber(c.i)) then
+        error("bad complex number", 3)
+    end
+end
+
+local function new (r, i) return {r=r, i=i} end
+local function add (c1, c2)
+    checkComplex(c1);
+    checkComplex(c2);
+    return new(c1.r + c2.r, c1.i + c2.i)
+end
+
+...
+
+-- 列表放在后面 因为必须首先定义局部函数
+complex = {
+    new = new,
+    add = add,
+    sub = sub,
+    mul = mul,
+    div = div,
+}
+```
+
+### 15.3 包 与 文件
+
+note:*当 require 加载一个文件的时候，它定义了一个变量来表示虚拟的文件名*
+
+```lua
+-- 不需要 require 就可以使用 package
+local P = {} -- package
+if _REQUIREDNAME == nil then
+    complex = P
+else
+   _G[_REQUIREDNAME] = P
+end
+```
+
+note:*我们可以在同一个文件之内定义多个 packages，我们需要做的只是将每一个 package 放在一个 **do 代码块***内，这样 local 变量才能被限制在那个代码块中*
+
+自动加载
+
+```lua
+local location = {
+   foo = "/usr/local/lua/lib/pack1_1.lua",
+   goo = "/usr/local/lua/lib/pack1_1.lua",
+   foo1 = "/usr/local/lua/lib/pack1_2.lua",
+   goo1 = "/usr/local/lua/lib/pack1_3.lua",
+}
+
+pack1 = {}
+
+setmetatable(pack1, {__index = function (t, funcname)
+    local file = location[funcname]
+    if not file then
+        error("package pack1 does not define " .. funcname)
+    end
+    assert(loadfile(file))()    -- load and run definition
+    return t[funcname]          -- return the function
+end})
+
+return pack1
+```
+
+## 16 面向对象程序设计
+
+```lua
+Account = {
+    balance=0,
+    withdraw = function (self, v)
+        self.balance = self.balance - v
+    end
+}
+function Account:deposit (v)
+    self.balance = self.balance + v
+end
+Account.deposit(Account, 200.00)
+Account:withdraw(100.00)
 ```
