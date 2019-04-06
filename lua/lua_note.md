@@ -1180,13 +1180,13 @@ t = {}
 -- create metatable
 local mt = {
 __index = function (t,k)
-print("*access to element " .. tostring(k))
-return _t[k] -- access the original table
+    print("*access to element " .. tostring(k))
+    return _t[k] -- access the original table
 end,
 __newindex = function (t,k,v)
-print("*update of element " .. tostring(k) ..
-" to " .. tostring(v))
-_t[k] = v -- update original table
+    print("*update of element " .. tostring(k) ..
+    " to " .. tostring(v))
+    _t[k] = v -- update original table
 end
 }
 setmetatable(t, mt)
@@ -1368,56 +1368,891 @@ complex = {
 
 ### 15.3 包 与 文件
 
-note:*当 require 加载一个文件的时候，它定义了一个变量来表示虚拟的文件名*
+    note:*当 require 加载一个文件的时候，它定义了一个变量来表示虚拟的文件名*
 
-```lua
--- 不需要 require 就可以使用 package
-local P = {} -- package
-if _REQUIREDNAME == nil then
-    complex = P
-else
-   _G[_REQUIREDNAME] = P
-end
-```
-
-note:*我们可以在同一个文件之内定义多个 packages，我们需要做的只是将每一个 package 放在一个 **do 代码块***内，这样 local 变量才能被限制在那个代码块中*
-
-自动加载
-
-```lua
-local location = {
-   foo = "/usr/local/lua/lib/pack1_1.lua",
-   goo = "/usr/local/lua/lib/pack1_1.lua",
-   foo1 = "/usr/local/lua/lib/pack1_2.lua",
-   goo1 = "/usr/local/lua/lib/pack1_3.lua",
-}
-
-pack1 = {}
-
-setmetatable(pack1, {__index = function (t, funcname)
-    local file = location[funcname]
-    if not file then
-        error("package pack1 does not define " .. funcname)
+    ```lua
+    -- 不需要 require 就可以使用 package
+    local P = {} -- package
+    if _REQUIREDNAME == nil then
+        complex = P
+    else
+    _G[_REQUIREDNAME] = P
     end
-    assert(loadfile(file))()    -- load and run definition
-    return t[funcname]          -- return the function
-end})
+    ```
 
-return pack1
-```
+    note:*我们可以在同一个文件之内定义多个 packages，我们需要做的只是将每一个 package 放在一个 **do 代码块***内，这样 local 变量才能被限制在那个代码块中*
+
+    自动加载
+
+    ```lua
+    local location = {
+    foo = "/usr/local/lua/lib/pack1_1.lua",
+    goo = "/usr/local/lua/lib/pack1_1.lua",
+    foo1 = "/usr/local/lua/lib/pack1_2.lua",
+    goo1 = "/usr/local/lua/lib/pack1_3.lua",
+    }
+
+    pack1 = {}
+
+    setmetatable(pack1, {__index = function (t, funcname)
+        local file = location[funcname]
+        if not file then
+            error("package pack1 does not define " .. funcname)
+        end
+        assert(loadfile(file))()    -- load and run definition
+        return t[funcname]          -- return the function
+    end})
+
+    return pack1
+    ```
 
 ## 16 面向对象程序设计
 
-```lua
-Account = {
-    balance=0,
-    withdraw = function (self, v)
-        self.balance = self.balance - v
+    ```lua
+    Account = {
+        balance=0,
+        withdraw = function (self, v)
+            self.balance = self.balance - v
+        end
+    }
+    function Account:deposit (v)
+        self.balance = self.balance + v
     end
-}
-function Account:deposit (v)
-    self.balance = self.balance + v
+    Account.deposit(Account, 200.00)
+    Account:withdraw(100.00)
+
+    function Account:new (o)
+        o = o or {} -- create object if user does not provide one
+        setmetatable(o, self)
+        self.__index = self
+        return o
+    end
+
+    a = Account:new{balance = 0}
+    a:deposit(100.00)
+
+    getmetatable(a).__index.deposit(a, 100.00)
+    Account.deposit(a, 100.00)
+
+    ```
+
+    ### 16.3 多重继承
+
+        多重继承意味着一个类拥有多个父类
+
+    ### 16.4 私有性
+
+        通过闭包实现私有性
+
+        ```lua
+        function newAccount (initialBalance)
+            local self = {
+                balance = initialBalance,
+                LIM = 10000.00,
+            }
+
+            local withdraw = function (v)
+            self.balance = self.balance - v
+            end
+
+            local deposit = function (v)
+            self.balance = self.balance + v
+            end
+
+            local extra = function ()
+                if self.balance > self.LIM then
+                    return self.balance*0.10
+                else
+                return 0 end
+            end
+
+            local getBalance = function ()
+                return self.balance + self.extra()
+            end
+
+            --local getBalance = function () return self.balance end
+            return {
+                withdraw = withdraw,
+                deposit = deposit,
+                getBalance = getBalance
+            }
+        end
+
+        acc1 = newAccount(100.00)
+        acc1.withdraw(40.00)
+        print(acc1.getBalance())    --> 60
+        ```
+
+    ### 16.5 Single-Method 的对象实现方法
+
+        ```lua
+        function newObject (value)
+            return function (action, v)
+                if action == "get" then return value
+                elseif action == "set" then value = v
+                else error("invalid action")
+                end
+            end
+        end
+
+        d = newObject(0)
+        print(d("get")) --> 0
+        d("set", 10)
+        print(d("get")) --> 10
+        ```
+
+## 17 weak 表
+
+    一个 weak 引用是指*一个不被 Lua 认为是垃圾的对象的引用。*
+    如果一个对象所有的引用指向都是weak，对象将被收集，而那些 weak 引用将会被删除。
+    如果一个对象只存在于 weak tables 中，Lua 将会最终将它收集。
+
+    三种类型的 weak tables：
+
+    - weak keys 组成的 tables；
+    - weak values 组成的 tables；
+    - 以及纯 weak tables 类型，他们的 keys 和 values 都是 weak 的。
+
+    表的 weak 性由他的 metatable 的__mode 域来指定的。
+
+    ```lua
+    a = {}
+    b = {}
+    setmetatable(a, b)
+    b.__mode = "k" -- now 'a' has weak keys
+    key = {} -- creates first key
+    a[{key}] = 1
+    key = {} -- creates second key
+    a[key] = 2
+    collectgarbage() -- forces a garbage collection cycle
+    for k, v in pairs(a) do print(v) end
+    ```
+
+    第二个赋值语句 key={}覆盖了第一个 key 的值。当垃圾收集器工作时，在其他地方没有指向第一个 key 的引用，所以它被收集了
+
+    note:*只有对象才可以从一个 weak table 中被收集。比如数字和布尔值类型的值，都是不会被收集的。*
+
+    example:*如果我们在 table 中插入了一个数值型的 key（在前面那个例子中），它将永远不会被收集器从 table 中移除。当然，如果对应于这个数值型 key 的 **vaule**被收集，那么它的整个入口将会从 weak table 中被移除。*
+
+    note:*一个字符串不会从 weak tables 中被移除（除非它所关联的 vaule 被收集）*
+
+    ### 17.1 记忆函数
+
+        如果这个结果表中有 weak 值，每次的垃圾收集循环都会移除当前时间内所有未被使用的结果
+
+        ```lua
+        local results = {}
+        setmetatable(results, {__mode = "v"}) -- make values weak
+        function createRGB (r, g, b)
+            local key = r .. "-" .. g .. "-" .. b
+            if results[key] then return results[key]
+            else
+                local newcolor = {red = r, green = g, blue = b}
+                results[key] = newcolor
+                return newcolor
+            end
+        end
+        ```
+
+> 标准库
+
+## 18. 数学库
+
+    三角函数库（sin, cos, tan, asin, acos, etc.）
+    幂指函数（exp, log, log10），
+    舍入函数（floor, ceil）、
+    max、min，加上一个变量 pi。
+
+    所有的三角函数都在弧度单位下工作。**（Lua4.0 以前在度数下工作。）**
+    你可以使用 `deg`和 `rad` 函数在度和弧度之间转换。
+
+    math.random 用来产生伪随机数，有三种调用方式：
+
+    - 第一：不带参数，将产生 [0,1)范围内的随机数.
+    - 第二：带一个参数 n，将产生 1 <= x <= n 范围内的随机数 x.
+    - 第三：带两个参数 a 和 b,将产生 a <= x <= b 范围内的随机数 x.
+
+    ```lua
+    math.randomseed(os.time())
+    ```
+
+## 19. table 库
+
+    table.getn table.setn 已经弃用
+
+    ```lua
+    a = {nil, 1, 2, key = '1234321', nil, 15, 'sagewqgag', nil}
+
+    for k,v in pairs(a) do
+        print(k,v)
+    end
+
+    for k,v in ipairs(a) do
+        print('ddd',k,v)
+    end
+
+    print('len:',#a)
+    ```
+
+    ipairs iterate number index until first `nil`
+    pairs iterate all except `nil`
+    when `{nil, 1, 2, key = '1234321', nil, 15, 'sagewqgag', nil}`, #a = 6
+    when `{1, 2, key = '1234321', nil, 15, 'sagewqgag', nil}`, #a = 2
+    when `{1, 2, key = '1234321', 15, 'sagewqgag', nil}`, #a = 4
+    when `{1, 2, key = '1234321', 15, 'sagewqgag'}`, #a = 4
+
+    table.insert 函数在 array指定位置插入一个元素，并**将后面所有其他的元素后移。**
+
+    不带位置参数调用 insert，将会在 array**最后位置**插入元素（所以不需要元素移动）
+
+    note:*排序函数有两个参数并且如果在 array 中排序后第一个参数在第二个参数前面，排序函数必须返回 true。如果未提供排序函数，sort 使用默认的小于操作符进行比较*
+
+## 20 string 库
+
+    `string.len(s)`返回字符串 s 的长度；
+    `string.rep(s,n)`返回重复 n 次字符串 s 的串；
+    你使用 `string.rep("a", 2^20)`可以创建一个 1M bytes 的字符串（比如，为了测试需要） ；
+    `string.lower(s)`将 s 中的大写字母转换成小写（`string.upper`将小写转换成大写）
+    `string.sub(s,i,j)`函数截取字符串 s 的从第 i 个字符到第 j 个字符之间的串。
+
+    Lua中，*字符串的第一个字符索引从 1 开始。你也可以使用负索引，负索引从字符串的结尾向前计数：-1 指向最后一个字符，-2 指向倒数第二个，以此类推。*
+    note:*Lua 中的字符串是恒定不变的。String.sub 函数以及 Lua 中其他的字符串操作函数都不会改变字符串的值，而是返回一个新的字符串。*
+    如果你想修改一个字符串变量的值，你必须将变量赋给一个新的字符串：
+
+    ```lua
+    s = string.sub(s, 2, -2)
+    print(string.char(97)) --> a
+    i = 99; print(string.char(i, i+1, i+2)) --> cde
+    print(string.byte("abc")) --> 97
+    print(string.byte("abc", 2)) --> 98
+    print(string.byte("abc", -1)) --> 99
+
+    print(string.format("pi = %.4f", PI)) --> pi = 3.1416
+    d = 5; m = 11; y = 1990
+    print(string.format("%02d/%02d/%04d", d, m, y)) --> 05/11/1990
+    tag, title = "h1", "a title"
+    print(string.format("<%s>%s</%s>", tag, title, tag)) --> <h1>a title</h1>
+    ```
+
+### 20.1 模式匹配
+
+Lua并不使用POSIX规范的正则表达式（也写作**regexp**）来进行模式匹配。
+
+```lua
+s = "hello world"
+i, j = string.find(s, "hello")
+print(i, j) --> 1 5
+print(string.sub(s, i, j)) --> hello
+print(string.find(s, "world")) --> 7 11
+i, j = string.find(s, "l")
+print(i, j) --> 3 3
+print(string.find(s, "lll")) --> nil
+
+local t = {} -- table to store the indices
+local i = 0
+while true do
+    i = string.find(s, "\n", i+1) -- find 'next' newline
+    if i == nil then break end
+    table.insert(t, i)
 end
-Account.deposit(Account, 200.00)
-Account:withdraw(100.00)
+
+s = string.gsub("Lua is cute", "cute", "great")
+print(s) --> Lua is great
+s = string.gsub("all lii", "l", "x")
+print(s) --> axx xii
+s = string.gsub("Lua is great", "perl", "tcl")
+print(s) --> Lua is great
+
+s = string.gsub("all lii", "l", "x", 1)
+print(s) --> axl lii
+s = string.gsub("all lii", "l", "x", 2)
+print(s) --> axx lii
+_, count = string.gsub(str, " ", " ")
+```
+
+note:*_ 只是一个哑元变量*
+
+### 20.2 模式
+
+    + 匹配前一字符 1 次或多次
+    * 匹配前一字符 0 次或多次
+    - 匹配前一字符 0 次或多次
+    ? 匹配前一字符 0 次或 1 次
+    '[_%a][_%w]*' 匹配 Lua 程序中的标示符：字母或者下划线开头的字母下划线数字序列。
+    匹配一对圆括号()或者括号之间的空白，可以使用 '%(%s*%)'
+
+```lua
+s = "Deadline is 30/05/1999, firm"
+date = "%d%d/%d%d/%d%d%d%d"
+print(string.sub(s, string.find(s, date))) --> 30/05/1999
+
+print(string.gsub("hello, up-down!", "%A", ".")) --> hello..up.down. 4
+
+print(string.gsub("one, and two; and three", "%a+", "word")) --> word, word word; word word
+
+i, j = string.find("the number 1298 is even", "%d+")
+print(i,j) --> 12 15
+```
+
+### 20.3 捕获
+
+```lua
+pair = "name = Anna"
+_, _, key, value = string.find(pair, "(%a+)%s*=%s*(%a+)")
+print(key, value) --> name Anna
+
+date = "17/7/1990"
+_, _, d, m, y = string.find(date, "(%d+)/(%d+)/(%d+)")
+print(d, m, y) --> 17 7 1990
+
+s = [[then he said: "it's all right"!]]
+a, b, c, quotedPart = string.find(s, "([\"'])(.-)%1")
+print(quotedPart) --> it's all right
+print(c) --> "
+```
+
+## 21. IO 库
+
+### 21.1 简单 I/O 模式
+
+io.input 和 io.output 函数来改变当前文件。
+例如io.input(filename)就是打开给定文件（以读模式），并将其设置为当前输入文件。
+接下来所有的输入都来自于该文，直到再次使用 io.input。io.output 函数。
+一旦产生错误两个函数都会产生错误。
+
+```lua
+> io.write("sin (3) = ", math.sin(3), "\n")
+--> sin (3) = 0.1411200080598672
+> io.write(string.format("sin (3) = %.4f\n", math.sin(3)))
+--> sin (3) = 0.1411
+```
+
+在编写代码时应当避免像 io.write(a..b..c)；这样的书写，这同 io.write(a,b,c)的效果是一样的。但是后者因为避免了串联操作，而消耗较少的资源。
+
+Write 函数与 print 函数不同在于，write 不附加任何额外的字符到输出中去，例如制表符，换行符等等。
+write 函数是使用当前输出文件，而 print 始终使用标准输出。
+print函数会自动调用参数的 tostring方法，所以可以显示出表（tables）函数（functions）和 nil。
+
+"*all" 读取整个文件
+"*line" 读取下一行
+"*number" 从串中转换出一个数值
+num 读取 num 个字符到串
+
+io.read("*all")函数从当前位置读取整个输入文件。如果当前位置在文件末尾，或者文件为空，函数将返回空串。
+io.read("*line")函数返回当前输入文件的下一行（不包含最后的换行符）。当到达文件末尾，返回值为 nil（表示没有下一行可返回）
+*该读取方式是 read 函数的默认方式，所以可以简写为 io.read()。*
+io.read("*number")函数从当前输入文件中读取出一个数值。只有在该参数下 read 函数才返回数值，而不是字符串。
+如果在当前位置找不到一个数字（由于格式不对，或者是到了文件的结尾），则返回 nil 可以对每个参数设置选项，函数将返回各自的结果。
+
+```lua
+--[[
+6.0 -3.23 15e12
+4.3 234 1000001
+...
+]]
+while true do
+local n1, n2, n3 = io.read("*number", "*number", "*number")
+if not n1 then break end
+print(math.max(n1, n2, n3))
+end
+
+local size = 2^13 -- good buffer size (8K)
+while true do
+local block = io.read(size)
+if not block then break end
+io.write(block)
+end
+```
+
+### 21.2 完全 I/O 模式
+
+```lua
+local f = assert(io.open(filename, "r"))
+local t = f:read("*all")
+f:close()
+
+local temp = io.input() -- save current file
+io.input("newinput") -- open a new current file
+... -- do something with new input
+io.input():close() -- close current file
+io.input(temp) -- restore previous current file
+```
+
+I/O 优化的一个小技巧:
+通常 Lua 中读取整个文件要比一行一行的读取一个文件快的多。
+
+```lua
+local lines, rest = f:read(BUFSIZE, "*line")
+
+local BUFSIZE = 2^13 -- 8K
+local f = io.input(arg[1]) -- open input file
+local cc, lc, wc = 0, 0, 0 -- char, line, and word counts
+while true do
+    local lines, rest = f:read(BUFSIZE, "*line")
+    if not lines then break end
+    if rest then lines = lines .. rest .. '\n' end
+    cc = cc + string.len(lines)
+    -- count words in the chunk
+    local _,t = string.gsub(lines, "%S+", "")
+    wc = wc + t
+    -- count newlines in the chunk
+    _,t = string.gsub(lines, "\n", "\n")
+    lc = lc + t
+end
+print(lc, wc, cc)
+
+local inp = assert(io.open(arg[1], "rb"))
+local out = assert(io.open(arg[2], "wb"))
+local data = inp:read("*all")
+data = string.gsub(data, "\r\n", "\n")
+out:write(data)
+assert(out:close())
+
+function fsize (file)
+local current = file:seek() -- get current position
+local size = file:seek("end") -- get file size
+file:seek("set", current) -- restore position
+return size
+end
+```
+
+## 22 操作系统库
+
+Lua 是以 ANSI C 写成的
+
+```lua
+-- obs: 10800 = 3*60*60 (3 hours)
+print(os.time{year=1970, month=1, day=1, hour=0})
+--> 10800
+print(os.time{year=1970, month=1, day=1, hour=0, sec=1})
+--> 10801
+print(os.time{year=1970, month=1, day=1})
+--> 54000 (obs: 54000 = 10800 + 12*60*60)
+
+temp = os.date("*t", 906000490)
+
+--[[
+{year = 1998, month = 9, day = 16, yday = 259, wday = 4,
+hour = 23, min = 48, sec = 10, isdst = false}
+
+%a abbreviated weekday name (e.g., Wed)
+%A full weekday name (e.g., Wednesday)
+%b abbreviated month name (e.g., Sep)
+%B full month name (e.g., September)
+%c date and time (e.g., 09/16/98 23:48:10)
+%d day of the month (16) [01-31]
+%H hour, using a 24-hour clock (23) [00-23]
+%I hour, using a 12-hour clock (11) [01-12]
+%M minute (48) [00-59]
+%m month (09) [01-12]
+%p either "am" or "pm" (pm)
+%S second (10) [00-61]
+%w weekday (3) [0-6 = Sunday-Saturday]
+%x date (e.g., 09/16/98)
+%X time (e.g., 23:48:10)
+%Y full year (1998)
+%y two-digit year (98) [00-99]
+%% the character '%'
+]]
+
+-- 事实上如果不使用任何参数就调用 date，就是以%c 的形式输出。
+print(os.date("today is %A, in %B"))
+--> today is Tuesday, in May
+print(os.date("%x", 906000490))
+--> 09/16/1998
+
+print(os.getenv("HOME")) --> /home/lua
+
+function createDir (dirname)
+    os.execute("mkdir " .. dirname)
+end
+```
+
+## 23. debug 库
+
+debug 库由两种函数组成：自省(`introspective`)函数和 `hooks`。
+
+自省函数 *使得我们可以检查运行程序的某些方面，比如活动函数栈、当前执行代码的行号、本地变量的名和值。*
+Hooks *可以跟踪程序的执行情况。*
+
+```lua
+debug.getinfo(foo)
+```
+
+以数字 n 调用 `debug.getinfo(n)`时，返回在 **n 级栈**的活动函数的信息数据。
+比如，如果 n=1，返回的是正在进行调用的那个函数的信息。（n=0 表示 C 函数 getinfo 本身）
+如果 n 比栈中活动函数的个数大的话，debug.getinfo 返回 nil。
+
+```lua
+function traceback ()
+    local level = 1
+    while true do
+        local info = debug.getinfo(level, "Sl")
+        if not info then break end
+        if info.what == "C" then -- is a C function?
+            print(level, "C function")
+        else -- a Lua function
+            print(string.format("[%s]:%d",
+            info.short_src, info.currentline))
+        end
+        level = level + 1
+    end
+end
+
+--[[
+a 10
+b 20
+x nil
+a 4
+]]
+function foo (a,b)
+    local x
+    do local c = a - b end
+    local a = 1
+    while true do
+        local name, value = debug.getlocal(1, a)
+        if not name then break end
+        print(name, value)
+        a = a + 1
+    end
+end
+foo(10, 20)
+
+function getvarvalue (name)
+    local value, found
+    -- try local variables
+    local i = 1
+    while true do
+        local n, v = debug.getlocal(2, i)
+        if not n then break end
+        if n == name then
+        value = v
+        found = true
+        end
+        i = i + 1
+    end
+    if found then return value end
+    -- try upvalues
+    local func = debug.getinfo(2).func
+    i = 1
+    while true do
+        local n, v = debug.getupvalue(func, i)
+        if not n then break end
+        if n == name then return v end
+        i = i + 1
+    end
+    -- not found; get global
+    return getfenv(func)[name]
+end
+```
+
+### 23.2 hooks
+
+Lua 使用单个参数调用 hooks，参数为一个描述产生调用的事件："call"、"return"、"line" 或 "count"。
+
+有四种可以触发一个 hook 的事件：
+
+- 当 Lua 调用一个函数的时候 call 事件发生；
+- 每次函数返回的时候，return 事件发生；
+- Lua 开始执行代码的新行时候，line 事件发生；
+- 运行指定数目的指令之后，count 事件发生。
+
+> C API
+
+## 24. C API 纵览
+
+Lua 解释器是一个使用 Lua 标准库实现的独立的解释器，她是一个很小的应用（总共不超过 500 行的代码）。
+
+解释器负责程序和使用者的接口：*从使用者那里获取文件或者字符串，并传给 Lua 标准库，Lua 标准库负责最终的代码运行。*
+
+第一种，C 作为应用程序语言，Lua 作为一个**库**使用；
+第二种，反过来，Lua 作为程序语言，C 作为库使用。
+
+C API:
+    - 读写 Lua 全局变量的函数，
+    - 调用 Lua 函数的函数，
+    - 运行 Lua 代码片断的函数，
+    - 注册 C 函数然后可以在Lua 中被调用的函数，等等。
+
+压栈函数:
+
+    - 空值（nil）用 lua_pushnil，
+    - 数值型（double）用 lua_pushnumber，
+    - 布尔型（在 C 中用整数表示）用lua_pushboolean，
+    - 任意的字符串（char*类型，**允许包含'\0'字符**）用 lua_pushlstring，C语言风格（以'\0'结束）的字符串（const char*）用 lua_pushstring：
+
+Lua 中的字符串不是以零为结束符的；它们依赖于一个明确的长度，因此可以包含任意的二进制数据。
+Lua 从来不保持一个指向**外部字符串**（或任何其它对象，除了 C 函数——它总是静态指针）的指针。
+
+```lua
+int lua_checkstack (lua_State *L, int sz);
+```
+
+lua_isnumber 和 lua_isstring 函数不检查这个值是否是指定的类型，而是看它**是否能被转换成指定的那种类型**。例如，任何数字类型都满足 lua_isstring
+
+lua_type 函数，它返回栈中元素的类型。
+
+给定的元素的类型不正确,lua_toboolean、lua_tonumber 和 lua_strlen 返回 0，其他函数返回 NULL
+
+当一个 C 函数返回后，Lua 会清理他的栈
+
+```C
+const char *s = lua_tostring(L, -1); /* any Lua string */
+size_t l = lua_strlen(L, -1); /* its length */
+assert(s[l] == '\0');
+assert(strlen(s) <= l);
+```
+
+函数 lua_gettop 返回堆栈中的元素个数，它也是栈顶元素的索引
+
+一个负数索引-x 对应于正数索引 gettop-x+1。
+
+lua_settop 设置栈顶（也就是堆栈中的元素个数）为一个指定的值。
+    - 如果开始的栈顶高于新的栈顶，顶部的值被丢弃。
+    - 否则，为了得到指定的大小这个函数压入相应个数的空值（nil）到栈上。
+
+lua_settop(L,0)清空堆栈。
+
+函数 lua_pushvalue 压入堆栈上指定索引的一个抟贝到栈顶；
+lua_remove 移除指定索引位置的元素，并将其上面所有的元素下移来填补这个位置的空白；
+lua_insert 移动栈顶元素到指定索引的位置，并将这个索引位置上面的元素全部上移至栈顶被移动留下的空隔；
+最后，lua_replace 从栈顶弹出元素值并将其设置到指定索引位置，没有任何移动操作。
+
+```c
+static void stackDump (lua_State *L) {
+    int i;
+    int top = lua_gettop(L);
+    for(i=1;i<=top;i++){ /*repeatforeachlevel*/
+        int t = lua_type(L, i);
+        switch (t) {
+        case LUA_TSTRING: /* strings */
+            printf("`%s'", lua_tostring(L, i));
+            break;
+        case LUA_TBOOLEAN: /* booleans */
+            printf(lua_toboolean(L, i) ? "true" : "false");
+            break;
+        case LUA_TNUMBER: /* numbers */
+            printf("%g", lua_tonumber(L, i));
+            break;
+        default: /* other values */
+            printf("%s", lua_typename(L, t)); 
+            break;
+    }
+    printf(" "); /* put a separator */ }
+    printf("\n"); /* end the listing */
+}
+
+int main (void) {
+    lua_State *L = lua_open();
+    lua_pushboolean(L, 1); lua_pushnumber(L, 10);
+    lua_pushnil(L); lua_pushstring(L, "hello");
+    stackDump(L);
+    /* true 10 nil `hello' */
+    lua_pushvalue(L, -4); stackDump(L);
+    /* true 10 nil `hello' true */
+    lua_replace(L, 3); stackDump(L);
+    /* true 10 true `hello' */
+    lua_settop(L, 6); stackDump(L);
+    /* true 10 true `hello' nil nil */
+    lua_remove(L, -3); stackDump(L);
+    /* true 10 true nil nil */
+    lua_settop(L, -5); stackDump(L);
+    /* true */
+    lua_close(L);
+    return 0;
+}
+```
+
+### 24.3 C API 的错误处理
+
+当我们写一个库代码时（也就是被 Lua 调用的 C 函数）长跳转（long jump）的用处几乎和一个真正的异常处理一样的方便，因为 Lua 抓取了任务偶然的错误。
+
+panic 函数
+lua_pcall
+lua_cpcall
+luaL_error
+
+## 25.调用 lua 函数
+
+## 26. 调用 C 函数
+
+```c
+lua_pushcfunction(l, l_sin);
+lua_setglobal(l, "mysin");
+
+static int l_sin (lua_State *L) {
+    double d = luaL_checknumber(L, 1);
+    lua_pushnumber(L, sin(d));
+    return 1; /* number of results */
+}
+
+// C函数库
+LUAMOD_API int
+luaopen_rmq_core(lua_State *L) {
+    luaL_Reg l[] = {
+        { "lwrite", lrmq_write },
+        { "pack", lrmq_pack },
+        { "unpack", lrmq_unpack },
+        { "bind", lrmq_bind },
+        { NULL, NULL },
+    };
+    luaL_checkversion(L);
+    luaL_newlib(L,l);
+
+    return 1;
+}
+```
+
+## 28. user-defined types in C
+
+接口访问形式:
+
+```lua
+a = array.new(1000)
+print(a) --> userdata: 0x8064d48
+print(array.size(a)) --> 1000
+for i=1,1000 do
+array.set(a, i, 1/i)
+end
+```
+
+```C
+
+static int newarray (lua_State *L) {
+    int n = luaL_checkint(L, 1);
+    size_t nbytes = sizeof(NumArray) + (n - 1)*sizeof(double);
+    NumArray *a = (NumArray *)lua_newuserdata(L, nbytes);
+    luaL_getmetatable(L, "LuaBook.array");
+    lua_setmetatable(L, -2);
+    a->size = n;
+    return 1; /* new userdatum is already on the stack */
+}
+
+static NumArray *checkarray (lua_State *L) {
+    void *ud = luaL_checkudata(L, 1, "LuaBook.array");
+    luaL_argcheck(L, ud != NULL, 1, "`array' expected");
+    return (NumArray *)ud;
+}
+
+static int getsize (lua_State *L) {
+    NumArray *a = checkarray(L);
+    lua_pushnumber(L, a->size);
+    return 1;
+}
+
+static double *getelem (lua_State *L) {
+    NumArray *a = checkarray(L);
+    int index = luaL_checkint(L, 2);
+    luaL_argcheck(L, 1 <= index && index <= a->size, 2,
+    "index out of range");
+    /* return element address */
+    return &a->values[index - 1];
+}
+
+static int setarray (lua_State *L) {
+    double newvalue = luaL_checknumber(L, 3);
+    *getelem(L) = newvalue;
+    return 0;
+}
+static int getarray (lua_State *L) {
+    lua_pushnumber(L, *getelem(L));
+    return 1;
+}
+
+static const struct luaL_reg arraylib_f [] = {
+    {"new", newarray},
+    {NULL, NULL}
+};
+static const struct luaL_reg arraylib_m [] = {
+    {"__tostring", array2string},
+    {"set", setarray},
+    {"get", getarray},
+    {"size", getsize},
+    {NULL, NULL}
+};
+
+int array2string (lua_State *L) {
+    NumArray *a = checkarray(L);
+    lua_pushfstring(L, "array(%d)", a->size);
+    return 1;
+}
+
+int luaopen_array (lua_State *L) {
+    luaL_newmetatable(L, "LuaBook.array");
+    lua_pushstring(L, "__index");
+    lua_pushvalue(L, -2); /* pushes the metatable */
+    lua_settable(L, -3); /* metatable.__index = metatable */
+    
+    luaL_openlib(L, NULL, arraylib_m, 0);
+    luaL_openlib(L, "array", arraylib_f, 0);
+    return 1;
+}
+```
+
+note:*luaL_openlib 的另一个特征，第一次调用，当我们传递一个 NULL作为库名时，luaL_openlib 并没有创建任何包含函数的表；相反，他认为封装函数的表在栈内，位于临时的 upvalues 的下面。*
+
+在这个例子中，封装函数的表是 metatable 本身，也就是 luaL_openlib 放置方法的地方。*
+
+面向对象访问形式:
+
+```lua
+a = array.new(1000)
+print(a:size()) --> 1000
+a:set(10, 3.4)
+print(a:get(10)) --> 3.4
+```
+
+## 29. 资源管理
+
+```C
+#include <dirent.h>
+#include <errno.h>
+/* forward declaration for the iterator function */
+static int dir_iter (lua_State *L);
+static int l_dir (lua_State *L) {
+    const char *path = luaL_checkstring(L, 1);
+    /* create a userdatum to store a DIR address */
+    DIR **d = (DIR **)lua_newuserdata(L, sizeof(DIR *));
+    /* set its metatable */
+    luaL_getmetatable(L, "LuaBook.dir");
+    lua_setmetatable(L, -2);
+    /* try to open the given directory */
+    *d = opendir(path);
+    if (*d == NULL) /* error opening the directory? */
+    luaL_error(L, "cannot open %s: %s", path,
+    strerror(errno));
+    /* creates and returns the iterator function
+        (its sole upvalue, the directory userdatum,
+        is already on the stack top */
+    lua_pushcclosure(L, dir_iter, 1);
+    return 1;
+}
+
+static int dir_iter (lua_State *L) {
+    DIR *d = *(DIR **)lua_touserdata(L, lua_upvalueindex(1));
+    struct dirent *entry;
+    if ((entry = readdir(d)) != NULL) {
+    lua_pushstring(L, entry->d_name);
+    return 1;
+    }
+    else return 0; /* no more values to return */
+}
+
+static int dir_gc (lua_State *L) {
+    DIR *d = *(DIR **)lua_touserdata(L, 1);
+    if (d) closedir(d);
+    return 0;
+}
+
+int luaopen_dir (lua_State *L) {
+    luaL_newmetatable(L, "LuaBook.dir");
+    /* set its __gc field */
+    lua_pushstring(L, "__gc");
+    lua_pushcfunction(L, dir_gc);
+    lua_settable(L, -3);
+    /* register the `dir' function */
+    lua_pushcfunction(L, l_dir);
+    lua_setglobal(L, "dir");
+    return 0;
+}
 ```
